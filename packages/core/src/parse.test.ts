@@ -149,5 +149,47 @@ describe("Cord Parser", () => {
                 "1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:255"
             );
         });
+
+        it("should handle compound types with mixed, non-sequential defaults", () => {
+            const result = parseCordSentence(
+                "Transfer {0<token:uint256=1:address:uint8=255>}"
+            );
+
+            expect(result.success).toBe(true);
+            if (!result.success) return;
+
+            const input = result.value.inputs[0];
+            expect(input.type).toEqual({
+                baseType: "uint256",
+                metadata: ["address", "uint8"],
+            });
+            expect(input.defaultValue).toBe("1:255");
+        });
+
+        it("should validate each part of a compound type default", () => {
+            const result = parseCordSentence(
+                "Transfer {0<token:uint256=abc:address:uint8=999>}"
+            );
+
+            expect(result.success).toBe(false);
+            // First default is invalid uint256
+            if (result.success) return;
+            expect(result.error).toContain(
+                'Invalid default value "abc" for type uint256'
+            );
+        });
+
+        it("should validate the last default in a compound type", () => {
+            const result = parseCordSentence(
+                "Transfer {0<token:uint256=1:address:uint8=999>}"
+            );
+
+            expect(result.success).toBe(false);
+            // Last default is invalid uint8 (>255)
+            if (result.success) return;
+            expect(result.error).toContain(
+                'Invalid default value "999" for type uint8'
+            );
+        });
     });
 });
