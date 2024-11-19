@@ -61,4 +61,93 @@ describe("Cord Parser", () => {
             expect(result.value.inputs[3].dependentOn).toBe(1);
         });
     });
+
+    describe("parseCordSentence with default values", () => {
+        it("should parse default values correctly", () => {
+            const sentence =
+                "Deposit {0<amount:uint256=1000>} {1<token:address>}";
+
+            const result = parseCordSentence(sentence);
+
+            expect(result.success).toBe(true);
+            if (!result.success) return;
+
+            const input = result.value.inputs[0];
+            expect(input.defaultValue).toBe("1000");
+            expect(input.type).toBe("uint256");
+        });
+
+        it("should validate default values match their types", () => {
+            const result = parseCordSentence(
+                "Deposit {0<amount:uint256=invalid>} {1<token:address>}"
+            );
+            expect(result.success).toBe(false);
+        });
+
+        it("should handle multiple inputs with default values", () => {
+            const result = parseCordSentence(
+                "Transfer {0<amount:uint256=100>} {1<token:address=0x742d35Cc6634C0532925a3b844Bc454e4438f44e>}"
+            );
+
+            expect(result.success).toBe(true);
+            if (!result.success) return;
+
+            expect(result.value.inputs[0].defaultValue).toBe("100");
+            expect(result.value.inputs[1].defaultValue).toBe(
+                "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+            );
+        });
+    });
+
+    describe("parseCordSentence with compound types and defaults", () => {
+        it("should parse compound types with mixed defaults", () => {
+            const result = parseCordSentence(
+                "Transfer {0<token:uint256=1:address:uint8=255>}"
+            );
+
+            expect(result.success).toBe(true);
+            if (!result.success) return;
+
+            const input = result.value.inputs[0];
+            expect(input.type).toEqual({
+                baseType: "uint256",
+                metadata: ["address", "uint8"],
+            });
+            expect(input.defaultValue).toBe("1:255");
+        });
+
+        it("should handle compound types with no defaults", () => {
+            const result = parseCordSentence(
+                "Transfer {0<token:uint256:address:uint8>}"
+            );
+
+            expect(result.success).toBe(true);
+            if (!result.success) return;
+
+            const input = result.value.inputs[0];
+            expect(input.type).toEqual({
+                baseType: "uint256",
+                metadata: ["address", "uint8"],
+            });
+            expect(input.defaultValue).toBeUndefined();
+        });
+
+        it("should handle compound types with all defaults", () => {
+            const result = parseCordSentence(
+                "Transfer {0<token:uint256=1:address=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:uint8=255>}"
+            );
+
+            expect(result.success).toBe(true);
+            if (!result.success) return;
+
+            const input = result.value.inputs[0];
+            expect(input.type).toEqual({
+                baseType: "uint256",
+                metadata: ["address", "uint8"],
+            });
+            expect(input.defaultValue).toBe(
+                "1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:255"
+            );
+        });
+    });
 });

@@ -1,4 +1,4 @@
-import { isEvmType, validateInputSequence } from "./validate";
+import { isEvmType, validateEvmValue, validateInputSequence } from "./validate";
 import {
     PLACEHOLDER_PATTERN,
     InputReference,
@@ -8,6 +8,51 @@ import {
     CompoundType,
 } from "./lib";
 
+const parseTypeString = (
+    typeString: string
+): {
+    type: EvmType | CompoundType;
+    defaultValue?: string;
+} => {
+    const parts = typeString.split(":");
+    const types: EvmType[] = [];
+    const defaults: (string | undefined)[] = [];
+
+    parts.forEach((part) => {
+        const [typeStr, defaultValue] = part.split("=");
+
+        if (!isEvmType(typeStr)) {
+            throw new Error(`Invalid type: ${typeStr}`);
+        }
+
+        if (defaultValue !== undefined) {
+            if (!validateEvmValue(defaultValue, typeStr as EvmType)) {
+                throw new Error(
+                    `Invalid default value "${defaultValue}" for type ${typeStr}`
+                );
+            }
+        }
+
+        types.push(typeStr as EvmType);
+        defaults.push(defaultValue);
+    });
+
+    const type =
+        types.length > 1
+            ? {
+                  baseType: types[0],
+                  metadata: types.slice(1),
+              }
+            : types[0];
+
+    const definedDefaults = defaults.filter(
+        (d): d is string => d !== undefined
+    );
+    const defaultValue =
+        definedDefaults.length > 0 ? definedDefaults.join(":") : undefined;
+
+    return { type, defaultValue };
+};
 export const parseCordSentence = (
     sentence: string
 ): Result<ParsedCordSentence> => {
@@ -15,15 +60,38 @@ export const parseCordSentence = (
         const inputs: InputReference[] = [];
         const template = sentence.replace(
             PLACEHOLDER_PATTERN,
-            (_, dependentOn, index, name, type, typeMetadata, delimiter) => {
-                inputs.push({
-                    index: Number(index),
-                    ...(dependentOn && { dependentOn: Number(dependentOn) }),
-                    ...(name && { name }),
-                    ...(type && { type: type as EvmType }),
-                    ...(typeMetadata && { typeMetadata }),
-                    ...(delimiter && { delimiter }),
-                });
+            (_, dependentOn, index, name, typeString, delimiter) => {
+                if (typeString) {
+                    try {
+                        const { type, defaultValue } =
+                            parseTypeString(typeString);
+                        inputs.push({
+                            index: Number(index),
+                            ...(dependentOn && {
+                                dependentOn: Number(dependentOn),
+                            }),
+                            ...(name && { name }),
+                            type,
+                            ...(defaultValue && { defaultValue }),
+                            ...(delimiter && { delimiter }),
+                        });
+                    } catch (e: unknown) {
+                        throw new Error(
+                            `Invalid type definition at index ${index}: ${
+                                e instanceof Error ? e.message : "Unknown error"
+                            }`
+                        );
+                    }
+                } else {
+                    inputs.push({
+                        index: Number(index),
+                        ...(dependentOn && {
+                            dependentOn: Number(dependentOn),
+                        }),
+                        ...(name && { name }),
+                        ...(delimiter && { delimiter }),
+                    });
+                }
                 return `{${index}}`;
             }
         );
@@ -43,7 +111,7 @@ export const parseCordSentence = (
                 inputs,
             },
         };
-    } catch (error) {
+    } catch (error: unknown) {
         return {
             success: false,
             error:
