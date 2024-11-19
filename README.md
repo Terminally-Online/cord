@@ -1,6 +1,7 @@
 ![Cord image](./cord.png)
 
 Cord is a string based language for structured sentences that enables low-code transaction (intent) data input while maintaining precise control over input definitions, options, and associated values. It allows developers to define user-facing interfaces for data entry that map to specific intents.
+Cord is a string based language for structured sentences that enables low-code transaction (intent) data input while maintaining precise control over input definitions, options, and associated values. It allows developers to define user-facing interfaces for data entry that map to specific intents.
 
 ## Core Concepts
 
@@ -32,6 +33,7 @@ Transfer {0<amount>} {1<token>} {2<id>} to {3<recipient>}.
 
 ### Types (and runtime validation)
 
+You can define a single-depth `EVM` type to enable native validation on named inputs. If not provided, inputs will not be validated.
 You can define a single-depth `EVM` type to enable native validation on named inputs. If not provided, inputs will not be validated.
 
 ```txt
