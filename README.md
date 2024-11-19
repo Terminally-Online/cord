@@ -1,4 +1,4 @@
-# Cord
+![Cord image](./cord.png)
 
 Cord is a string based language for structured sentences that enables low-code data input while maintaining precise control over input definitions, options, and associated values. It allows developers to define user-facing interfaces for data entry that map to specific intents.
 
