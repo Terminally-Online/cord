@@ -35,7 +35,7 @@ Transfer {0<amount>} {1<token>} {2<id>} to {3<recipient>}.
 To provide the best user experience you can define a single-depth `EVM` type to enable native validation.
 
 ```txt
-Transfer {0<amount:uint256>} {1<token:uint256:address>} {2<id:uint256>} to {3<recipient:address>}.
+Transfer {0<amount:uint256>} {1<token:address>} {2<id:uint256>} to {3<recipient:address>}.
 ```
 
 ### Pointers (Data Dependencies)
