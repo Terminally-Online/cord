@@ -22,6 +22,14 @@ For independent inputs that don't share data relationships, use simple indexed p
 Deposit {0} {1} into {2}.
 ```
 
+### Naming
+
+For independent inputs that don't share data relationships, use simple indexed placeholders:
+
+```txt
+Transfer {0<amount>} {1<token>} {2<id>} to {3<recipient>}.
+```
+
 ### Pointers (Data Dependencies)
 
 When subsequent inputs depend on previous selections, use the pointer syntax with =>:
