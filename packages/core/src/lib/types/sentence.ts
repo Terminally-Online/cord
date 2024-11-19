@@ -1,9 +1,10 @@
 import { EvmType } from "./evm";
+import { CompoundType } from "./metadata";
 
 export type InputReference = {
     index: number;
     name?: string;
-    type?: EvmType;
+    type?: EvmType | CompoundType;
     dependentOn?: number;
     delimiter?: string;
 };
