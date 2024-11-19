@@ -32,11 +32,21 @@ Transfer {0<amount>} {1<token>} {2<id>} to {3<recipient>}.
 
 ### Types (and runtime validation)
 
-You can define a single-depth `EVM` type to enable native validation. If not provided, inputs will not be validated.
+You can define a single-depth `EVM` type to enable native validation on named inputs. If not provided, inputs will not be validated.
 
 ```txt
 Transfer {0<amount:uint256>} {1<token:address>} {2<id:uint256>} to {3<recipient:address>}.
 ```
+
+Valid types include:
+
+-   `uint[8-256]`
+-   `int[8-256]`
+-   `bytes[1-32]`
+-   `bytes`
+-   `address`
+-   `bool`
+-   `string`
 
 ### Compound Types
 
@@ -46,4 +56,4 @@ While single-depth types work in most cases there are situations where you will 
 Transfer {0<amount:uint256>} {1<token:(address,uint8)>} {2<id:uint256>} to {3<recipient:address>}.
 ```
 
-In this case, the value provided would be `0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:20` where we have defined a token address and it's standard.
+In this case, the value provided for `token` would be `0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:20` where we have defined a token address and it's standard.
