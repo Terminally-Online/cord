@@ -5,6 +5,7 @@ export type InputReference = {
     index: number;
     name?: string;
     type?: EvmType | CompoundType;
+    defaultValue?: string;
     dependentOn?: number;
     delimiter?: string;
 };

@@ -67,3 +67,11 @@ Deposit {0<amount:uint256>} {1<token:address>} into {1=>2<vault:address>}.
 ```
 
 In this situation, if the value of `1` is changed after having set a value for `2`, the value of `2` will be cleared.
+
+### Default Values
+
+In specific cases you will want default values. Simply append a `={value}` following the type definition.
+
+```txt
+Deposit {0<amount:uint256=1>} {1<token:address=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:uint8=20>} into {1=>2<vault:address>}.
+```
