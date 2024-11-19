@@ -5,7 +5,7 @@ import { ParsedView } from "@/components/ParsedView";
 // This is the sentence we are working towards:
 // Transfer {0<amount:[if:1|1=721:1:else:uint256]=1>} {1<token:address>|:} {2<id:uint256>} to {3<recipient:address>}.
 
-const SENTENCE = "Transfer {0} {1} {2} to {3}";
+const SENTENCE = "Transfer {0<amount>} {1<token>} {2<id>} to {3<recipient>}";
 
 export const App = () => {
     const {

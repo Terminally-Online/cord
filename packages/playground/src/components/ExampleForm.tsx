@@ -20,7 +20,7 @@ export const ExampleForm = ({
                 {parsed.inputs.map((input) => (
                     <div key={input.index} className="flex items-center gap-4">
                         <label className="w-24 font-mono text-sm">
-                            Input {input.index}
+                            Input {input.name ?? input.index}
                             {input.delimiter && (
                                 <span className="text-gray-500 ml-1">
                                     (:{input.delimiter})

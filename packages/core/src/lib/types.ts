@@ -1,5 +1,6 @@
 export type InputReference = {
     index: number;
+    name?: string;
     dependentOn?: number;
     delimiter?: string;
 };

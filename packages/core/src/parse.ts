@@ -14,14 +14,15 @@ export const parseCordSentence = (
 
         const template = sentence.replace(
             PLACEHOLDER_PATTERN,
-            (_, index, dependentOn, delimiter) => {
+            (_, index, name, dependentOn, delimiter) => {
                 inputs.push({
                     index: Number(index),
+                    ...(name && { name }),
                     ...(dependentOn && { dependentOn: Number(dependentOn) }),
                     ...(delimiter && { delimiter }),
                 });
 
-                return `{${index}}`;
+                return `{${index}}`; // Normalize to basic placeholder
             }
         );
 
