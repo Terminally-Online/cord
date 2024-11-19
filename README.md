@@ -37,23 +37,3 @@ To provide the best user experience you can define a single-depth `EVM` type to 
 ```txt
 Transfer {0<amount:uint256>} {1<token:address>} {2<id:uint256>} to {3<recipient:address>}.
 ```
-
-### Pointers (Data Dependencies)
-
-When subsequent inputs depend on previous selections, use the pointer syntax with =>:
-
-```txt
-Deposit {0} {1} into {1=>2}.
-```
-
-In this example, `{1=>2}` indicates that the options for input 2 are determined by the value selected in input 1. This helps filter irrelevant options and present only contextually appropriate choices.
-
-### Delimiters
-
-For cases requiring additional processing information or compound values, use the metadata break syntax:
-
-```txt
-Transfer {0} {1|:}
-```
-
-The `|` is a `metadata break` while the following value is the `delimiter` that will be used to separate the provided value. In this example, we would be passing an address to `1` with an appended delimiter so that we can define the `token standard`.
