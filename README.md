@@ -53,7 +53,7 @@ Valid types include:
 While single-depth types work in most cases there are situations where you will need to define a compound string as a type to enable more verbose backend decoding:
 
 ```txt
-Transfer {0<amount:uint256>} {1<token:(address,uint8)>} {2<id:uint256>} to {3<recipient:address>}.
+Transfer {0<amount:uint256>} {1<token:address:uint8>} {2<id:uint256>} to {3<recipient:address>}.
 ```
 
 In this case, the value provided for `token` would be `0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:20` where we have defined a token address and it's standard.
