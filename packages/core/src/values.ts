@@ -1,4 +1,31 @@
 import { InputReference, InputValues, ParsedCordSentence, Result } from "./lib";
+import { validateCompoundValue, validateEvmValue } from "./validate";
+
+// export const setValue = <
+//     T extends {
+//         parsedSentence: ParsedCordSentence;
+//         currentValues: InputValues;
+//         index: number;
+//         value: string;
+//     },
+// >(): Result<InputValues> => {
+//     const input = parsedSentence.inputs.find((i) => i.index === index);
+//
+//     if (!input) {
+//         return {
+//             success: false,
+//             error: `Invalid input index: ${index}`,
+//         };
+//     }
+//
+//     const newValues = new Map(currentValues);
+//     newValues.set(
+//         index,
+//         input.delimiter ? `${value}${input.delimiter}` : value
+//     );
+//
+//     return { success: true, value: newValues };
+// };
 
 export const setValue = <
     T extends {
@@ -13,21 +40,19 @@ export const setValue = <
     index,
     value,
 }: T): Result<InputValues> => {
-    const input = parsedSentence.inputs.find((i) => i.index === index);
+    const input = parsedSentence.inputs[index];
+    if (!input?.type) return { success: false, error: "Invalid input" };
 
-    if (!input) {
-        return {
-            success: false,
-            error: `Invalid input index: ${index}`,
-        };
+    if (typeof input.type === "object") {
+        if (!validateCompoundValue(value, input.type)) {
+            return { success: false, error: "Invalid compound value" };
+        }
+    } else if (!validateEvmValue(value, input.type)) {
+        return { success: false, error: "Invalid value" };
     }
 
     const newValues = new Map(currentValues);
-    newValues.set(
-        index,
-        input.delimiter ? `${value}${input.delimiter}` : value
-    );
-
+    newValues.set(index, value);
     return { success: true, value: newValues };
 };
 

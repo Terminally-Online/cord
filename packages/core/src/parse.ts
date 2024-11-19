@@ -1,10 +1,11 @@
-import { validateInputSequence } from "./validate";
+import { isEvmType, validateInputSequence } from "./validate";
 import {
     PLACEHOLDER_PATTERN,
     InputReference,
     ParsedCordSentence,
     Result,
     EvmType,
+    CompoundType,
 } from "./lib";
 
 export const parseCordSentence = (
@@ -53,4 +54,17 @@ export const parseCordSentence = (
                     : "Unknown parsing error",
         };
     }
+};
+
+export const parseCompoundType = (type: string): CompoundType | null => {
+    const types = type.split(":");
+    if (types.length === 1) return null;
+
+    const [baseType, ...metadata] = types;
+    if (!isEvmType(baseType) || !metadata.every(isEvmType)) return null;
+
+    return {
+        baseType: baseType as EvmType,
+        metadata: metadata as EvmType[],
+    };
 };

@@ -1,4 +1,4 @@
-import { EvmType } from "@/lib";
+import { CompoundType, EvmType } from "@/lib";
 
 const UINT_PATTERN = /^uint(\d+)$/;
 const INT_PATTERN = /^int(\d+)$/;
@@ -55,6 +55,21 @@ export const validateEvmValue = (value: string, type: EvmType): boolean => {
         default:
             return false;
     }
+};
+
+export const validateCompoundValue = (
+    value: string,
+    type: CompoundType
+): boolean => {
+    const parts = value.split(":");
+    if (parts.length !== type.metadata.length + 1) return false;
+
+    const [baseValue, ...metadataValues] = parts;
+    if (!validateEvmValue(baseValue, type.baseType)) return false;
+
+    return metadataValues.every((value, index) =>
+        validateEvmValue(value, type.metadata[index])
+    );
 };
 
 export const isEvmType = (type: string): type is EvmType => {
