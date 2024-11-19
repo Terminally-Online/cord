@@ -1,95 +1,67 @@
-import { InputReference, InputValues, ParsedCordSentence, Result } from "./lib";
+import { InputValues, ParsedCordSentence, Result } from "./lib";
 import { validateCompoundValue, validateEvmValue } from "./validate";
 
-// export const setValue = <
-//     T extends {
-//         parsedSentence: ParsedCordSentence;
-//         currentValues: InputValues;
-//         index: number;
-//         value: string;
-//     },
-// >(): Result<InputValues> => {
-//     const input = parsedSentence.inputs.find((i) => i.index === index);
-//
-//     if (!input) {
-//         return {
-//             success: false,
-//             error: `Invalid input index: ${index}`,
-//         };
-//     }
-//
-//     const newValues = new Map(currentValues);
-//     newValues.set(
-//         index,
-//         input.delimiter ? `${value}${input.delimiter}` : value
-//     );
-//
-//     return { success: true, value: newValues };
-// };
-
 export const setValue = <
-    T extends {
-        parsedSentence: ParsedCordSentence;
-        currentValues: InputValues;
-        index: number;
-        value: string;
-    },
+  T extends {
+    parsedSentence: ParsedCordSentence;
+    currentValues: InputValues;
+    index: number;
+    value: string;
+  },
 >({
-    parsedSentence,
-    currentValues,
-    index,
-    value,
+  parsedSentence,
+  currentValues,
+  index,
+  value,
 }: T): Result<InputValues> => {
-    const input = parsedSentence.inputs[index];
-    if (!input?.type) return { success: false, error: "Invalid input" };
+  const input = parsedSentence.inputs[index];
+  if (!input?.type) return { success: false, error: "Invalid input" };
 
-    if (typeof input.type === "object") {
-        if (!validateCompoundValue(value, input.type)) {
-            return { success: false, error: "Invalid compound value" };
-        }
-    } else if (!validateEvmValue(value, input.type)) {
-        return { success: false, error: "Invalid value" };
+  if (typeof input.type === "object") {
+    if (!validateCompoundValue(value, input.type)) {
+      return { success: false, error: "Invalid compound value" };
     }
+  } else if (!validateEvmValue(value, input.type)) {
+    return { success: false, error: "Invalid value" };
+  }
 
-    const newValues = new Map(currentValues);
-    newValues.set(index, value);
-    return { success: true, value: newValues };
-};
+  const currentValue = currentValues.get(index);
+  if (currentValue === value) {
+    return { success: true, value: currentValues };
+  }
 
-export const getDependencies = (
-    parsedSentence: ParsedCordSentence,
-    index: number
-): number[] => {
-    return parsedSentence.inputs
-        .filter(
-            (input) => input.dependentOn !== undefined && input.index === index
-        )
-        .map((input) => input.dependentOn!)
-        .filter(Boolean);
-};
+  const newValues = new Map(currentValues);
+  newValues.set(index, value);
 
-export const getDependentInputs = (
-    parsedSentence: ParsedCordSentence,
-    index: number
-): InputReference[] => {
-    return parsedSentence.inputs.filter((input) => input.dependentOn === index);
+  const hasDependents = parsedSentence.inputs.some(
+    (input) => input.dependentOn === index
+  );
+  if (hasDependents) {
+    parsedSentence.inputs.forEach((input) => {
+      if (input.dependentOn === index) {
+        newValues.delete(input.index);
+      }
+    });
+  }
+
+  return { success: true, value: newValues };
 };
 
 export const resolveSentence = (
-    parsedSentence: ParsedCordSentence,
-    values: InputValues
+  parsedSentence: ParsedCordSentence,
+  values: InputValues
 ): Result<string> => {
-    try {
-        const resolved = parsedSentence.template.replace(
-            /\{(\d+)\}/g,
-            (_, index) => values.get(Number(index)) || ""
-        );
+  try {
+    const resolved = parsedSentence.template.replace(
+      /\{(\d+)\}/g,
+      (_, index) => values.get(Number(index)) || ""
+    );
 
-        return { success: true, value: resolved };
-    } catch (error) {
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : "Resolution error",
-        };
-    }
+    return { success: true, value: resolved };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Resolution error",
+    };
+  }
 };

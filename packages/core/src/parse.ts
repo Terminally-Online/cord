@@ -13,19 +13,17 @@ export const parseCordSentence = (
 ): Result<ParsedCordSentence> => {
     try {
         const inputs: InputReference[] = [];
-
         const template = sentence.replace(
             PLACEHOLDER_PATTERN,
-            (_, index, name, type, typeMetadata, dependentOn, delimiter) => {
+            (_, dependentOn, index, name, type, typeMetadata, delimiter) => {
                 inputs.push({
                     index: Number(index),
+                    ...(dependentOn && { dependentOn: Number(dependentOn) }),
                     ...(name && { name }),
                     ...(type && { type: type as EvmType }),
                     ...(typeMetadata && { typeMetadata }),
-                    ...(dependentOn && { dependentOn: Number(dependentOn) }),
                     ...(delimiter && { delimiter }),
                 });
-
                 return `{${index}}`;
             }
         );
