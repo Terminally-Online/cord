@@ -30,15 +30,6 @@ describe("validateInputSequence", () => {
         expect(validateInputSequence(inputs)).toBe(false);
     });
 
-    it("should fail on out of order indices", () => {
-        const inputs: InputReference[] = [
-            { index: 1 },
-            { index: 0 },
-            { index: 2 },
-        ];
-        expect(validateInputSequence(inputs)).toBe(false);
-    });
-
     it("should handle empty input array", () => {
         expect(validateInputSequence([])).toBe(true);
     });

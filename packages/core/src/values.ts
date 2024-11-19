@@ -1,31 +1,5 @@
-import { InputReference, InputValues, ParsedCordSentence, Result } from "./lib";
+import { InputValues, ParsedCordSentence, Result } from "./lib";
 import { validateCompoundValue, validateEvmValue } from "./validate";
-
-// export const setValue = <
-//     T extends {
-//         parsedSentence: ParsedCordSentence;
-//         currentValues: InputValues;
-//         index: number;
-//         value: string;
-//     },
-// >(): Result<InputValues> => {
-//     const input = parsedSentence.inputs.find((i) => i.index === index);
-//
-//     if (!input) {
-//         return {
-//             success: false,
-//             error: `Invalid input index: ${index}`,
-//         };
-//     }
-//
-//     const newValues = new Map(currentValues);
-//     newValues.set(
-//         index,
-//         input.delimiter ? `${value}${input.delimiter}` : value
-//     );
-//
-//     return { success: true, value: newValues };
-// };
 
 export const setValue = <
     T extends {
@@ -51,28 +25,26 @@ export const setValue = <
         return { success: false, error: "Invalid value" };
     }
 
+    const currentValue = currentValues.get(index);
+    if (currentValue === value) {
+        return { success: true, value: currentValues };
+    }
+
     const newValues = new Map(currentValues);
     newValues.set(index, value);
+
+    const hasDependents = parsedSentence.inputs.some(
+        (input) => input.dependentOn === index
+    );
+    if (hasDependents) {
+        parsedSentence.inputs.forEach((input) => {
+            if (input.dependentOn === index) {
+                newValues.delete(input.index);
+            }
+        });
+    }
+
     return { success: true, value: newValues };
-};
-
-export const getDependencies = (
-    parsedSentence: ParsedCordSentence,
-    index: number
-): number[] => {
-    return parsedSentence.inputs
-        .filter(
-            (input) => input.dependentOn !== undefined && input.index === index
-        )
-        .map((input) => input.dependentOn!)
-        .filter(Boolean);
-};
-
-export const getDependentInputs = (
-    parsedSentence: ParsedCordSentence,
-    index: number
-): InputReference[] => {
-    return parsedSentence.inputs.filter((input) => input.dependentOn === index);
 };
 
 export const resolveSentence = (

@@ -57,3 +57,13 @@ Transfer {0<amount:uint256>} {1<token:(address,uint8)>} {2<id:uint256>} to {3<re
 ```
 
 In this case, the value provided for `token` would be `0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:20` where we have defined a token address and it's standard.
+
+### Dependencies
+
+There are situations where the value of one index is dependent on the value of another index. In this case, when the value of the parent index changes the child index should be cleared. To declare this you can define a dependent index with:
+
+```txt
+Deposit {0<amount:uint256>} {1<token:address>} into {1=>2<vault:address>}.
+```
+
+In this situation, if the value of `1` is changed after having set a value for `2`, the value of `2` will be cleared.
