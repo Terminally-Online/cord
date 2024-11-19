@@ -24,10 +24,18 @@ Deposit {0} {1} into {2}.
 
 ### Naming
 
-For independent inputs that don't share data relationships, use simple indexed placeholders:
+When the inputs are returned an array with name mappings can be created for simple API relaying:
 
 ```txt
 Transfer {0<amount>} {1<token>} {2<id>} to {3<recipient>}.
+```
+
+### Typing
+
+To provide the best user experience you can define a single-depth `EVM` type to enable native validation.
+
+```txt
+Transfer {0<amount:uint256>} {1<token:uint256:address>} {2<id:uint256>} to {3<recipient:address>}.
 ```
 
 ### Pointers (Data Dependencies)

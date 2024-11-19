@@ -4,6 +4,7 @@ import {
     InputReference,
     ParsedCordSentence,
     Result,
+    EvmType,
 } from "./lib";
 
 export const parseCordSentence = (
@@ -14,15 +15,17 @@ export const parseCordSentence = (
 
         const template = sentence.replace(
             PLACEHOLDER_PATTERN,
-            (_, index, name, dependentOn, delimiter) => {
+            (_, index, name, type, typeMetadata, dependentOn, delimiter) => {
                 inputs.push({
                     index: Number(index),
                     ...(name && { name }),
+                    ...(type && { type: type as EvmType }),
+                    ...(typeMetadata && { typeMetadata }),
                     ...(dependentOn && { dependentOn: Number(dependentOn) }),
                     ...(delimiter && { delimiter }),
                 });
 
-                return `{${index}}`; // Normalize to basic placeholder
+                return `{${index}}`;
             }
         );
 

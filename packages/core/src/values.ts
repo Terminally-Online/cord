@@ -1,5 +1,4 @@
 import { InputReference, InputValues, ParsedCordSentence, Result } from "./lib";
-import { isComplete } from "./validate";
 
 export const setValue = <
     T extends {

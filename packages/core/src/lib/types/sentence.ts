@@ -1,6 +1,9 @@
+import { EvmType } from "./evm";
+
 export type InputReference = {
     index: number;
     name?: string;
+    type?: EvmType;
     dependentOn?: number;
     delimiter?: string;
 };
