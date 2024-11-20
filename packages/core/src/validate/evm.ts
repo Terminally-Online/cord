@@ -1,4 +1,4 @@
-import { CompoundType, EvmType } from "@/lib";
+import { CompoundType, EvmType, InputType } from "@/lib";
 
 const UINT_PATTERN = /^uint(\d+)$/;
 const INT_PATTERN = /^int(\d+)$/;
@@ -8,7 +8,24 @@ const maxUintValue = (bits: number): bigint => 2n ** BigInt(bits) - 1n;
 const maxIntValue = (bits: number): bigint => 2n ** BigInt(bits - 1) - 1n;
 const minIntValue = (bits: number): bigint => -(2n ** BigInt(bits - 1));
 
-export const validateEvmValue = (value: string, type: EvmType): boolean => {
+export const validateEvmValue = (value: string, type: InputType): boolean => {
+    if (typeof type === "object" && "constant" in type) {
+        return value === type.constant;
+    }
+
+    if (typeof type === "object" && "baseType" in type) {
+        const parts = value.split(":");
+        if (parts.length !== type.metadata.length + 1) return false;
+
+        const [baseValue, ...metadataValues] = parts;
+
+        if (!validateEvmValue(baseValue, type.baseType)) return false;
+
+        return metadataValues.every((value, index) =>
+            validateEvmValue(value, type.metadata[index])
+        );
+    }
+
     const uintMatch = type.match(UINT_PATTERN);
     if (uintMatch) {
         const bits = parseInt(uintMatch[1]);

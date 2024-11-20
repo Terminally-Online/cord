@@ -17,11 +17,12 @@ export const setValue = <
   const input = parsedSentence.inputs[index];
   if (!input?.type) return { success: false, error: "Invalid input" };
 
-  if (typeof input.type === "object") {
+  if (typeof input.type === "object" && "baseType" in input.type) {
     if (!validateCompoundValue(value, input.type)) {
       return { success: false, error: "Invalid compound value" };
     }
   } else if (!validateEvmValue(value, input.type)) {
+    // For non-compound types (EvmType or ConstantType)
     return { success: false, error: "Invalid value" };
   }
 
@@ -33,6 +34,7 @@ export const setValue = <
   const newValues = new Map(currentValues);
   newValues.set(index, value);
 
+  // Handle dependents
   const hasDependents = parsedSentence.inputs.some(
     (input) => input.dependentOn === index
   );
