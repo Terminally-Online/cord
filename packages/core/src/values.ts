@@ -1,4 +1,5 @@
 import { InputValues, ParsedCordSentence, Result } from "./lib";
+import { compareValues } from "./parse";
 import { validateCompoundValue, validateEvmValue } from "./validate";
 
 export const setValue = <
@@ -16,6 +17,30 @@ export const setValue = <
 }: T): Result<InputValues> => {
   const input = parsedSentence.inputs[index];
   if (!input?.type) return { success: false, error: "Invalid input" };
+
+  if (typeof input.type === "object" && "reference" in input.type) {
+    const refValue = currentValues.get(input.type.reference);
+    if (refValue === undefined) {
+      return {
+        success: false,
+        error: `Referenced input ${input.type.reference} has no value`,
+      };
+    }
+
+    const conditionMet = compareValues(
+      refValue,
+      input.type.operator,
+      input.type.checkValue
+    );
+
+    const activeType = conditionMet
+      ? input.type.trueType
+      : input.type.falseType;
+
+    if (!validateEvmValue(value, activeType)) {
+      return { success: false, error: "Invalid value for conditional type" };
+    }
+  }
 
   if (typeof input.type === "object" && "baseType" in input.type) {
     if (!validateCompoundValue(value, input.type)) {

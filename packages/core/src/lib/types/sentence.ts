@@ -9,7 +9,17 @@ export type CompoundType = {
     metadata: (EvmType | ConstantType)[];
 };
 
-export type InputType = EvmType | ConstantType | CompoundType;
+export type ComparisonOperator = "=" | ">" | "<" | ">=" | "<=" | "!=";
+
+export type ConditionalType = {
+    reference: number;
+    operator: ComparisonOperator;
+    checkValue: string;
+    trueType: InputType;
+    falseType: InputType;
+};
+
+export type InputType = EvmType | ConstantType | CompoundType | ConditionalType;
 
 export type InputReference = {
     index: number;

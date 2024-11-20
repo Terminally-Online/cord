@@ -9,6 +9,14 @@ const maxIntValue = (bits: number): bigint => 2n ** BigInt(bits - 1) - 1n;
 const minIntValue = (bits: number): bigint => -(2n ** BigInt(bits - 1));
 
 export const validateEvmValue = (value: string, type: InputType): boolean => {
+    if (typeof type === "object" && "reference" in type) {
+        // NOTE: We can't validate here because we need the referenced value when
+        //       doing comparison validation. The validation for this piece will be
+        //       handled in setValue. For that to work we just need to early abort
+        //       the checks here.
+        return true;
+    }
+
     if (typeof type === "object" && "constant" in type) {
         return value === type.constant;
     }
