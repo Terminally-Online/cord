@@ -1,10 +1,20 @@
 import { EvmType } from "./evm";
-import { CompoundType } from "./metadata";
+
+export type ConstantType = {
+    constant: string;
+};
+
+export type CompoundType = {
+    baseType: EvmType | ConstantType;
+    metadata: (EvmType | ConstantType)[];
+};
+
+export type InputType = EvmType | ConstantType | CompoundType;
 
 export type InputReference = {
     index: number;
     name?: string;
-    type?: EvmType | CompoundType;
+    type?: InputType;
     defaultValue?: string;
     dependentOn?: number;
     delimiter?: string;

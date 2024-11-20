@@ -6,38 +6,42 @@ import {
     Result,
     EvmType,
     CompoundType,
+    ConstantType,
+    InputType,
 } from "./lib";
 
 const parseTypeString = (
     typeString: string
 ): {
-    type: EvmType | CompoundType;
+    type: InputType;
     defaultValue?: string;
 } => {
     const parts = typeString.split(":");
-    const types: EvmType[] = [];
+    const types: (EvmType | ConstantType)[] = [];
     const defaults: (string | undefined)[] = [];
 
     parts.forEach((part) => {
         const [typeStr, defaultValue] = part.split("=");
 
-        if (!isEvmType(typeStr)) {
-            throw new Error(`Invalid type: ${typeStr}`);
-        }
+        const type: EvmType | ConstantType = isEvmType(typeStr)
+            ? (typeStr as EvmType)
+            : { constant: typeStr };
 
         if (defaultValue !== undefined) {
-            if (!validateEvmValue(defaultValue, typeStr as EvmType)) {
+            if (!validateEvmValue(defaultValue, type)) {
                 throw new Error(
-                    `Invalid default value "${defaultValue}" for type ${typeStr}`
+                    typeof type === "object"
+                        ? `Invalid default value "${defaultValue}" for constant(${type.constant})`
+                        : `Invalid default value "${defaultValue}" for type ${type}`
                 );
             }
         }
 
-        types.push(typeStr as EvmType);
+        types.push(type);
         defaults.push(defaultValue);
     });
 
-    const type =
+    const type: InputType =
         types.length > 1
             ? {
                   baseType: types[0],
@@ -53,6 +57,7 @@ const parseTypeString = (
 
     return { type, defaultValue };
 };
+
 export const parseCordSentence = (
     sentence: string
 ): Result<ParsedCordSentence> => {

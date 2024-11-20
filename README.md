@@ -58,6 +58,14 @@ Transfer {0<amount:uint256>} {1<token:address:uint8>} {2<id:uint256>} to {3<reci
 
 In this case, the value provided for `token` would be `0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:20` where we have defined a token address and it's standard.
 
+### Constant Value Types
+
+In specific cases you will want to make the type of an input strict to a value. Any type that is not a supported `EVM` type is classified as a constant value type:
+
+```txt
+Deposit {0<amount:1>} {1<token:address>} into {1=>2<vault:address>}.
+```
+
 ### Default Values
 
 In specific cases you will want default values. Simply append a `={value}` following the type definition.

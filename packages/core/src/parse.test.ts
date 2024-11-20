@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseCordSentence } from "./parse";
+import { setValue } from "./values";
 
 describe("Cord Parser", () => {
     describe("parseCordSentence", () => {
@@ -190,6 +191,148 @@ describe("Cord Parser", () => {
             expect(result.error).toContain(
                 'Invalid default value "999" for type uint8'
             );
+        });
+    });
+
+    describe("parseCordSentence with constant type validation", () => {
+        it("should parse single constant type", () => {
+            const result = parseCordSentence("Deposit {0<amount:1>}");
+
+            expect(result.success).toBe(true);
+            if (!result.success) return;
+
+            const input = result.value.inputs[0];
+            expect(input.type).toEqual({ constant: "1" });
+        });
+
+        it("should validate constant type values", () => {
+            const sentence = parseCordSentence("Deposit {0<amount:1>}");
+            expect(sentence.success).toBe(true);
+            if (!sentence.success) return;
+
+            const setValidResult = setValue({
+                parsedSentence: sentence.value,
+                currentValues: new Map(),
+                index: 0,
+                value: "1",
+            });
+            expect(setValidResult.success).toBe(true);
+
+            const setInvalidResult = setValue({
+                parsedSentence: sentence.value,
+                currentValues: new Map(),
+                index: 0,
+                value: "2",
+            });
+            expect(setInvalidResult.success).toBe(false);
+        });
+
+        it("should parse constant type with default value", () => {
+            const result = parseCordSentence("Deposit {0<amount:1=1>}");
+
+            expect(result.success).toBe(true);
+            if (!result.success) return;
+
+            const input = result.value.inputs[0];
+            expect(input.type).toEqual({ constant: "1" });
+            expect(input.defaultValue).toBe("1");
+        });
+
+        it("should reject invalid default value for constant type", () => {
+            const result = parseCordSentence("Deposit {0<amount:1=2>}");
+
+            expect(result.success).toBe(false);
+            if (result.success) return;
+            expect(result.error).toContain(
+                'Invalid default value "2" for constant(1)'
+            );
+        });
+
+        describe("constant types in compound types", () => {
+            it("should parse compound type with constant as base type", () => {
+                const result = parseCordSentence(
+                    "Transfer {0<token:1:address>}"
+                );
+
+                expect(result.success).toBe(true);
+                if (!result.success) return;
+
+                const input = result.value.inputs[0];
+                expect(input.type).toEqual({
+                    baseType: { constant: "1" },
+                    metadata: ["address"],
+                });
+            });
+
+            it("should parse compound type with constant in metadata", () => {
+                const result = parseCordSentence(
+                    "Transfer {0<token:uint256:1:address>}"
+                );
+
+                expect(result.success).toBe(true);
+                if (!result.success) return;
+
+                const input = result.value.inputs[0];
+                expect(input.type).toEqual({
+                    baseType: "uint256",
+                    metadata: [{ constant: "1" }, "address"],
+                });
+            });
+
+            it("should validate compound values with constants", () => {
+                const sentence = parseCordSentence(
+                    "Transfer {0<token:1:address>}"
+                );
+                expect(sentence.success).toBe(true);
+                if (!sentence.success) return;
+
+                const setValidResult = setValue({
+                    parsedSentence: sentence.value,
+                    currentValues: new Map(),
+                    index: 0,
+                    value: "1:0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                });
+                expect(setValidResult.success).toBe(true);
+
+                const setInvalidResult = setValue({
+                    parsedSentence: sentence.value,
+                    currentValues: new Map(),
+                    index: 0,
+                    value: "2:0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                });
+                expect(setInvalidResult.success).toBe(false);
+            });
+
+            it("should handle compound type with multiple constants", () => {
+                const result = parseCordSentence("Transfer {0<token:1:2:3>}");
+
+                expect(result.success).toBe(true);
+                if (!result.success) return;
+
+                const input = result.value.inputs[0];
+                expect(input.type).toEqual({
+                    baseType: { constant: "1" },
+                    metadata: [{ constant: "2" }, { constant: "3" }],
+                });
+            });
+
+            it("should handle mixed constants and EVM types with defaults", () => {
+                const result = parseCordSentence(
+                    "Transfer {0<token:1=1:address=0x742d35Cc6634C0532925a3b844Bc454e4438f44e:2=2>}"
+                );
+
+                expect(result.success).toBe(true);
+                if (!result.success) return;
+
+                const input = result.value.inputs[0];
+                expect(input.type).toEqual({
+                    baseType: { constant: "1" },
+                    metadata: ["address", { constant: "2" }],
+                });
+                expect(input.defaultValue).toBe(
+                    "1:0x742d35Cc6634C0532925a3b844Bc454e4438f44e:2"
+                );
+            });
         });
     });
 });
