@@ -1,5 +1,12 @@
 import { isEvmType, validateEvmValue } from "../validate";
-import { EvmType, CompoundType, ConstantType, InputType } from "../lib";
+import {
+    EvmType,
+    CompoundType,
+    ConstantType,
+    InputType,
+    ConditionalType,
+    ComparisonOperator,
+} from "../lib";
 
 export const parseTypeString = (
     typeString: string
@@ -59,5 +66,34 @@ export const parseCompoundType = (type: string): CompoundType | null => {
     return {
         baseType: baseType as EvmType,
         metadata: metadata as EvmType[],
+    };
+};
+
+export const parseConditionalType = (
+    typeStr: string
+): ConditionalType | null => {
+    // Match format: [(1)>=100?1:uint256]
+    const match = typeStr.match(
+        /^\[?\((\d+)\)(=|>=|<=|>|<|!=)(\w+)\?([^:]+):([^\]]+)\]?$/
+    );
+    if (!match) return null;
+
+    const [_, reference, operator, checkValue, trueTypeStr, falseTypeStr] =
+        match;
+
+    const trueType = isEvmType(trueTypeStr)
+        ? (trueTypeStr as EvmType)
+        : { constant: trueTypeStr };
+
+    const falseType = isEvmType(falseTypeStr)
+        ? (falseTypeStr as EvmType)
+        : { constant: falseTypeStr };
+
+    return {
+        reference: Number(reference),
+        operator: operator as ComparisonOperator,
+        checkValue,
+        trueType,
+        falseType,
     };
 };
