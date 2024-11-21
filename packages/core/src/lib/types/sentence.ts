@@ -34,6 +34,7 @@ export type ParsedCordSentence = {
     raw: string;
     template: string;
     inputs: InputReference[];
+    values: InputValues;
 };
 
 export type Result<T> =

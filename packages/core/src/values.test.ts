@@ -18,6 +18,7 @@ describe("setValue", () => {
       },
       { index: 2, type: "address" },
     ],
+    values: new Map(),
   };
 
   it("should set valid uint256 value", () => {
@@ -117,6 +118,7 @@ describe("setValue with dependencies", () => {
       { index: 1, type: "address" },
       { index: 2, type: "address", dependentOn: 1 },
     ],
+    values: new Map(),
   };
 
   it("should clear dependent values when parent value changes", () => {
@@ -190,8 +192,26 @@ describe("setValue with dependencies", () => {
   });
 
   describe("resolveSentence", () => {
-    it("should resolve with provided values", () => {
+    it("should resolve with provided names, types and values", () => {
       const sentence = parseCordSentence("Transfer {0} {1} to {2}");
+      if (!sentence.success) throw new Error("Parse failed");
+
+      const values = new Map([
+        [0, "100"],
+        [1, "ETH"],
+        [2, "Bob"],
+      ]);
+
+      const result = resolveSentence(sentence.value, values);
+      expect(result.success).toBe(true);
+      if (!result.success) return;
+      expect(result.value).toBe("Transfer 100 ETH to Bob");
+    });
+
+    it("should resolve with provided names, types and values", () => {
+      const sentence = parseCordSentence(
+        "Transfer {0<amount:uint256>} {1<token:string>} to {2<recipient:string>}"
+      );
       if (!sentence.success) throw new Error("Parse failed");
 
       const values = new Map([

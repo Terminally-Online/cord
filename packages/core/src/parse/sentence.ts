@@ -6,49 +6,81 @@ import {
 } from "../lib";
 import { parseTypeString } from "./types";
 import { validateInputSequence } from "../validate";
+import { compareValues } from "./comparison";
 
 export const parseCordSentence = (
     sentence: string
 ): Result<ParsedCordSentence> => {
     try {
         const inputs: InputReference[] = [];
+        const values = new Map<number, string>();
+
+        // First pass: collect all inputs and set default values
         const template = sentence.replace(
             PLACEHOLDER_PATTERN,
             (_, dependentOn, index, name, typeString, delimiter) => {
-                if (typeString) {
-                    try {
-                        const { type, defaultValue } =
-                            parseTypeString(typeString);
-                        inputs.push({
-                            index: Number(index),
-                            ...(dependentOn && {
-                                dependentOn: Number(dependentOn),
-                            }),
-                            ...(name && { name }),
-                            type,
-                            ...(defaultValue && { defaultValue }),
-                            ...(delimiter && { delimiter }),
-                        });
-                    } catch (e: unknown) {
-                        throw new Error(
-                            `Invalid type definition at index ${index}: ${
-                                e instanceof Error ? e.message : "Unknown error"
-                            }`
-                        );
-                    }
-                } else {
+                try {
+                    const inputIndex = Number(index);
+
+                    const { type, defaultValue } = typeString
+                        ? parseTypeString(typeString)
+                        : ({} as Partial<InputReference>);
+
                     inputs.push({
-                        index: Number(index),
+                        index: inputIndex,
                         ...(dependentOn && {
                             dependentOn: Number(dependentOn),
                         }),
                         ...(name && { name }),
+                        ...(type && { type }),
+                        ...(defaultValue && { defaultValue }),
                         ...(delimiter && { delimiter }),
                     });
+
+                    // Set default value if provided
+                    if (defaultValue) {
+                        values.set(inputIndex, defaultValue);
+                    }
+
+                    return `{${index}}`;
+                } catch (error) {
+                    throw new Error(
+                        error instanceof Error
+                            ? error.message
+                            : "Type parsing error"
+                    );
                 }
-                return `{${index}}`;
             }
         );
+
+        // Second pass: resolve conditional values
+        inputs.forEach((input) => {
+            if (
+                input.type &&
+                typeof input.type === "object" &&
+                "reference" in input.type
+            ) {
+                const refValue = values.get(input.type.reference);
+                if (refValue !== undefined) {
+                    const conditionMet = compareValues(
+                        refValue,
+                        input.type.operator,
+                        input.type.checkValue
+                    );
+                    const resolvedType = conditionMet
+                        ? input.type.trueType
+                        : input.type.falseType;
+
+                    // If resolved type is a constant, set the value
+                    if (
+                        typeof resolvedType === "object" &&
+                        "constant" in resolvedType
+                    ) {
+                        values.set(input.index, resolvedType.constant);
+                    }
+                }
+            }
+        });
 
         if (!validateInputSequence(inputs)) {
             return {
@@ -63,9 +95,10 @@ export const parseCordSentence = (
                 raw: sentence,
                 template,
                 inputs,
+                values,
             },
         };
-    } catch (error: unknown) {
+    } catch (error) {
         return {
             success: false,
             error:

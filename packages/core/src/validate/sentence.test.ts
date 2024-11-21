@@ -44,6 +44,7 @@ describe("isComplete", () => {
         raw: "Transfer {0} {1} to {2}",
         template: "Transfer {0} {1} to {2}",
         inputs: [{ index: 0 }, { index: 1 }, { index: 2 }],
+        values: new Map(),
     };
 
     it("should return true when all inputs have values", () => {
@@ -74,6 +75,7 @@ describe("isComplete", () => {
             raw: "",
             template: "",
             inputs: [],
+            values: new Map(),
         };
         const values: InputValues = new Map();
         expect(isComplete(emptyParsedSentence, values)).toBe(true);

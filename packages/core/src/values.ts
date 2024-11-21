@@ -1,6 +1,10 @@
 import { InputValues, ParsedCordSentence, Result } from "./lib";
 import { compareValues } from "./parse";
-import { validateCompoundValue, validateEvmValue } from "./validate";
+import {
+  isComplete,
+  validateCompoundValue,
+  validateEvmValue,
+} from "./validate";
 
 export const setValue = <
   T extends {
@@ -76,12 +80,21 @@ export const setValue = <
 
 export const resolveSentence = (
   parsedSentence: ParsedCordSentence,
-  values: InputValues
+  values?: InputValues
 ): Result<string> => {
   try {
+    // Use the provided values if they exist, otherwise use the parsed values
+    const resolveValues = values || parsedSentence.values;
+
     const resolved = parsedSentence.template.replace(
       /\{(\d+)\}/g,
-      (_, index) => values.get(Number(index)) || ""
+      (_, index) => {
+        const value = resolveValues.get(Number(index));
+        if (value === undefined) {
+          throw new Error(`Missing value for input ${index}`);
+        }
+        return value;
+      }
     );
 
     return { success: true, value: resolved };
