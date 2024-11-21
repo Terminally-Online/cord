@@ -233,3 +233,174 @@ describe("parseCordSentence with constant type validation", () => {
         });
     });
 });
+
+describe("parseCordSentence with comparison based types", () => {
+    describe("numeric comparisons", () => {
+        const testCases = [
+            {
+                desc: "equal to",
+                sentence:
+                    "Transfer {0<amount:[(1)==100?1:uint256]>} {1<value:uint256>}",
+                matchValue: "100",
+                nonMatchValue: "99",
+                expectedType: "1",
+            },
+            {
+                desc: "greater than",
+                sentence:
+                    "Transfer {0<amount:[(1)>100?1:uint256]>} {1<value:uint256>}",
+                matchValue: "101",
+                nonMatchValue: "100",
+                expectedType: "1",
+            },
+            {
+                desc: "less than",
+                sentence:
+                    "Transfer {0<amount:[(1)<100?1:uint256]>} {1<value:uint256>}",
+                matchValue: "99",
+                nonMatchValue: "100",
+                expectedType: "1",
+            },
+            {
+                desc: "greater than or equal",
+                sentence:
+                    "Transfer {0<amount:[(1)>=100?1:uint256]>} {1<value:uint256>}",
+                matchValue: "100",
+                nonMatchValue: "99",
+                expectedType: "1",
+            },
+            {
+                desc: "less than or equal",
+                sentence:
+                    "Transfer {0<amount:[(1)<=100?1:uint256]>} {1<value:uint256>}",
+                matchValue: "100",
+                nonMatchValue: "101",
+                expectedType: "1",
+            },
+            {
+                desc: "not equal",
+                sentence:
+                    "Transfer {0<amount:[(1)!=100?1:uint256]>} {1<value:uint256>}",
+                matchValue: "101",
+                nonMatchValue: "100",
+                expectedType: "1",
+            },
+        ];
+
+        testCases.forEach(
+            ({ desc, sentence, matchValue, nonMatchValue, expectedType }) => {
+                describe(desc, () => {
+                    it(`should validate when condition is met (${matchValue})`, () => {
+                        const result = parseCordSentence(sentence);
+                        expect(result.success).toBe(true);
+                        if (!result.success) return;
+
+                        // Set reference value
+                        const withRef = setValue({
+                            parsedSentence: result.value,
+                            currentValues: new Map(),
+                            index: 1,
+                            value: matchValue,
+                        });
+                        expect(withRef.success).toBe(true);
+                        if (!withRef.success) return;
+
+                        // Should accept constant value when condition is met
+                        const setResult = setValue({
+                            parsedSentence: result.value,
+                            currentValues: withRef.value,
+                            index: 0,
+                            value: expectedType,
+                        });
+                        expect(setResult.success).toBe(true);
+                    });
+
+                    it(`should validate against fallback type when condition is not met (${nonMatchValue})`, () => {
+                        const result = parseCordSentence(sentence);
+                        expect(result.success).toBe(true);
+                        if (!result.success) return;
+
+                        // Set reference value
+                        const withRef = setValue({
+                            parsedSentence: result.value,
+                            currentValues: new Map(),
+                            index: 1,
+                            value: nonMatchValue,
+                        });
+                        expect(withRef.success).toBe(true);
+                        if (!withRef.success) return;
+
+                        // Should accept uint256 value when condition is not met
+                        const setResult = setValue({
+                            parsedSentence: result.value,
+                            currentValues: withRef.value,
+                            index: 0,
+                            value: "123",
+                        });
+                        expect(setResult.success).toBe(true);
+                    });
+                });
+            }
+        );
+    });
+
+    describe("string comparisons", () => {
+        it("should handle string equality", () => {
+            const result = parseCordSentence(
+                "Transfer {0<amount:[(1)==ERC721?1:uint256]>} {1<type:string>}"
+            );
+            expect(result.success).toBe(true);
+            if (!result.success) return;
+
+            const withRef = setValue({
+                parsedSentence: result.value,
+                currentValues: new Map(),
+                index: 1,
+                value: "ERC721",
+            });
+            expect(withRef.success).toBe(true);
+            if (!withRef.success) return;
+
+            const setResult = setValue({
+                parsedSentence: result.value,
+                currentValues: withRef.value,
+                index: 0,
+                value: "1",
+            });
+            expect(setResult.success).toBe(true);
+        });
+    });
+
+    describe("conditional type validation with operators", () => {
+        it("should handle basic numeric equality", () => {
+            // First test the parsing
+            const result = parseCordSentence(
+                "Transfer {0<amount:[(1)==100?1:uint256]>} {1<value:uint256>}"
+            );
+
+            expect(result.success).toBe(true);
+            if (!result.success) return;
+
+            // Set reference value
+            const withRef = setValue({
+                parsedSentence: result.value,
+                currentValues: new Map(),
+                index: 1,
+                value: "100",
+            });
+
+            expect(withRef.success).toBe(true);
+            if (!withRef.success) return;
+
+            // Try to set conditional value
+            const setResult = setValue({
+                parsedSentence: result.value,
+                currentValues: withRef.value,
+                index: 0,
+                value: "1",
+            });
+
+            expect(setResult.success).toBe(true);
+        });
+    });
+});

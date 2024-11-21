@@ -10,7 +10,7 @@ export const compareValues = (
 
     if (!isNaN(num1) && !isNaN(num2)) {
         switch (operator) {
-            case "=":
+            case "==":
                 return num1 === num2;
             case ">":
                 return num1 > num2;
@@ -26,7 +26,7 @@ export const compareValues = (
     }
 
     switch (operator) {
-        case "=":
+        case "==":
             return value === checkValue;
         case ">":
             return value > checkValue;
