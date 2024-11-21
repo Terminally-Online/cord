@@ -343,16 +343,38 @@ describe("parseCordSentence with comparison based types", () => {
             expect(result.value.values.get(0)).toBe("1");
         });
 
-        // it("should handle reference numeric equality", () => {
+        // TODO: Solve this in the next PR.
+        // it("should handle basic numeric equality in inverse order", () => {
         //     const result = parseCordSentence(
-        //         "Transfer {0<amount:[(1)==(2)?1:uint256]>} {1<value:uint256=100>} {2<value:uint256=100>}"
+        //         "Transfer {0<amount:[100==(1)?1:uint256]>} {1<value:uint256=100>}"
         //     );
         //     expect(result.success).toBe(true);
         //     if (!result.success) return;
         //
         //     expect(result.value.values.get(1)).toBe("100");
-        //     expect(result.value.values.get(2)).toBe("100");
         //     expect(result.value.values.get(0)).toBe("1");
         // });
+
+        it("should handle multiple reference comparisons", () => {
+            const result = parseCordSentence(
+                "Transfer {0<amount:[(1)==(2)?1:uint256]>} {1<value:uint256=100>} {2<value:uint256=100>}"
+            );
+            expect(result.success).toBe(true);
+            if (!result.success) return;
+            expect(result.value.values.get(1)).toBe("100");
+            expect(result.value.values.get(2)).toBe("100");
+            expect(result.value.values.get(0)).toBe("1");
+        });
+
+        it("should handle unequal reference values", () => {
+            const result = parseCordSentence(
+                "Transfer {0<amount:[(1)==(2)?1:uint256]>} {1<value:uint256=100>} {2<value:uint256=200>}"
+            );
+            expect(result.success).toBe(true);
+            if (!result.success) return;
+            expect(result.value.values.get(1)).toBe("100");
+            expect(result.value.values.get(2)).toBe("200");
+            expect(result.value.values.has(0)).toBe(false);
+        });
     });
 });

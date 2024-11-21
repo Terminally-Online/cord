@@ -110,37 +110,32 @@ export const parseCompoundType = (type: string): CompoundType | null => {
 export const parseConditionalType = (
     typeStr: string
 ): ConditionalType | null => {
-    console.log("Attempting to parse conditional:", typeStr);
-    // Match format: [(1)=100?1:uint256]
-    const match = typeStr.match(/^\[(.*?)\]$/);
+    const match = typeStr.match(
+        /^\[(\(\d+\))(==|>=|<=|>|<|!=)(\(\d+\)|\w+)\?(\w+):(\w+)\]$/
+    );
     if (!match) return null;
 
-    const inner = match[1];
-    const parts = inner.match(/^\((\d+)\)(=|>=|<=|>|<|!=)(\w+)\?(\w+):(\w+)$/);
-    if (!parts) return null;
+    const [_, refStr, operator, checkValueStr, trueTypeStr, falseTypeStr] =
+        match;
 
-    const [_, reference, operator, checkValue, trueTypeStr, falseTypeStr] =
-        parts;
-    console.log("Conditional parts:", {
-        reference,
-        operator,
-        checkValue,
-        trueTypeStr,
-        falseTypeStr,
-    });
+    // Extract reference number
+    const reference = Number(refStr.slice(1, -1));
 
-    // Handle true type
+    // Parse check value - could be a reference or literal
+    const checkValue = /^\(\d+\)$/.test(checkValueStr)
+        ? { reference: Number(checkValueStr.slice(1, -1)) }
+        : checkValueStr;
+
     const trueType = isEvmType(trueTypeStr)
         ? (trueTypeStr as EvmType)
         : { constant: trueTypeStr };
 
-    // Handle false type
     const falseType = isEvmType(falseTypeStr)
         ? (falseTypeStr as EvmType)
         : { constant: falseTypeStr };
 
     return {
-        reference: Number(reference),
+        reference,
         operator: operator as ComparisonOperator,
         checkValue,
         trueType,

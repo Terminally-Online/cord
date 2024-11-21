@@ -1,12 +1,24 @@
-import { ComparisonOperator } from "../lib";
+import { ComparisonOperator, ComparisonValue, InputValues } from "../lib";
 
 export const compareValues = (
-    value: string,
+    refValue: string,
     operator: ComparisonOperator,
-    checkValue: string
+    checkValue: ComparisonValue,
+    values: InputValues
 ): boolean => {
-    const num1 = Number(value);
-    const num2 = Number(checkValue);
+    const compareToValue =
+        typeof checkValue === "object"
+            ? values.get(checkValue.reference)
+            : checkValue.startsWith("(") && checkValue.endsWith(")")
+            ? values.get(Number(checkValue.slice(1, -1)))
+            : checkValue;
+
+    if (compareToValue === undefined) {
+        return false;
+    }
+
+    const num1 = Number(refValue);
+    const num2 = Number(compareToValue);
 
     if (!isNaN(num1) && !isNaN(num2)) {
         switch (operator) {
@@ -27,16 +39,16 @@ export const compareValues = (
 
     switch (operator) {
         case "==":
-            return value === checkValue;
+            return refValue === compareToValue;
         case ">":
-            return value > checkValue;
+            return refValue > compareToValue;
         case "<":
-            return value < checkValue;
+            return refValue < compareToValue;
         case ">=":
-            return value >= checkValue;
+            return refValue >= compareToValue;
         case "<=":
-            return value <= checkValue;
+            return refValue <= compareToValue;
         case "!=":
-            return value !== checkValue;
+            return refValue !== compareToValue;
     }
 };

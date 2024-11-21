@@ -15,7 +15,6 @@ export const parseCordSentence = (
         const inputs: InputReference[] = [];
         const values = new Map<number, string>();
 
-        // First pass: collect all inputs and set default values
         const template = sentence.replace(
             PLACEHOLDER_PATTERN,
             (_, dependentOn, index, name, typeString, delimiter) => {
@@ -37,11 +36,9 @@ export const parseCordSentence = (
                         ...(delimiter && { delimiter }),
                     });
 
-                    // Set default value if provided
                     if (defaultValue) {
                         values.set(inputIndex, defaultValue);
                     }
-
                     return `{${index}}`;
                 } catch (error) {
                     throw new Error(
@@ -53,7 +50,6 @@ export const parseCordSentence = (
             }
         );
 
-        // Second pass: resolve conditional values
         inputs.forEach((input) => {
             if (
                 input.type &&
@@ -61,17 +57,28 @@ export const parseCordSentence = (
                 "reference" in input.type
             ) {
                 const refValue = values.get(input.type.reference);
+
                 if (refValue !== undefined) {
+                    if (typeof input.type.checkValue === "object") {
+                        const compareValue = values.get(
+                            input.type.checkValue.reference
+                        );
+                        if (compareValue === undefined) {
+                            return;
+                        }
+                    }
+
                     const conditionMet = compareValues(
                         refValue,
                         input.type.operator,
-                        input.type.checkValue
+                        input.type.checkValue,
+                        values
                     );
+
                     const resolvedType = conditionMet
                         ? input.type.trueType
                         : input.type.falseType;
 
-                    // If resolved type is a constant, set the value
                     if (
                         typeof resolvedType === "object" &&
                         "constant" in resolvedType

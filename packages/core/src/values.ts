@@ -1,10 +1,6 @@
 import { InputValues, ParsedCordSentence, Result } from "./lib";
 import { compareValues } from "./parse";
-import {
-  isComplete,
-  validateCompoundValue,
-  validateEvmValue,
-} from "./validate";
+import { validateCompoundValue, validateEvmValue } from "./validate";
 
 export const setValue = <
   T extends {
@@ -30,17 +26,15 @@ export const setValue = <
         error: `Referenced input ${input.type.reference} has no value`,
       };
     }
-
     const conditionMet = compareValues(
       refValue,
       input.type.operator,
-      input.type.checkValue
+      input.type.checkValue,
+      currentValues
     );
-
     const activeType = conditionMet
       ? input.type.trueType
       : input.type.falseType;
-
     if (!validateEvmValue(value, activeType)) {
       return { success: false, error: "Invalid value for conditional type" };
     }
@@ -51,7 +45,6 @@ export const setValue = <
       return { success: false, error: "Invalid compound value" };
     }
   } else if (!validateEvmValue(value, input.type)) {
-    // For non-compound types (EvmType or ConstantType)
     return { success: false, error: "Invalid value" };
   }
 
@@ -63,7 +56,6 @@ export const setValue = <
   const newValues = new Map(currentValues);
   newValues.set(index, value);
 
-  // Handle dependents
   const hasDependents = parsedSentence.inputs.some(
     (input) => input.dependentOn === index
   );
@@ -74,7 +66,6 @@ export const setValue = <
       }
     });
   }
-
   return { success: true, value: newValues };
 };
 

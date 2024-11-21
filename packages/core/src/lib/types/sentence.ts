@@ -11,10 +11,12 @@ export type CompoundType = {
 
 export type ComparisonOperator = "==" | ">" | "<" | ">=" | "<=" | "!=";
 
+export type ComparisonValue = string | { reference: number };
+
 export type ConditionalType = {
     reference: number;
     operator: ComparisonOperator;
-    checkValue: string;
+    checkValue: ComparisonValue;
     trueType: InputType;
     falseType: InputType;
 };
