@@ -91,3 +91,9 @@ In specific cases you will want a type that is either a constant value type dyna
 ```txt
 Transfer {0<amount:[(1)>=20?1:uint256]>} {1<tokenType:uint256>}
 ```
+
+In the above, we've compared a reference value `(1)` to a constant value of `20`. In specific cases though, you will want to compare two reference values which you can easily do like:
+
+```txt
+Transfer {0<amount:[(1)==(2)?1:uint256]>} {1<value:uint256=100>} {2<amount:uint256=100>}
+```
