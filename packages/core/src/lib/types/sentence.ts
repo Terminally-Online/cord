@@ -9,7 +9,7 @@ export type CompoundType = {
     metadata: (EvmType | ConstantType)[];
 };
 
-export type ComparisonOperator = "=" | ">" | "<" | ">=" | "<=" | "!=";
+export type ComparisonOperator = "==" | ">" | "<" | ">=" | "<=" | "!=";
 
 export type ConditionalType = {
     reference: number;
