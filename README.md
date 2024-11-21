@@ -83,3 +83,11 @@ Deposit {0<amount:uint256>} {1<token:address>} into {1=>2<vault:address>}.
 ```
 
 In this situation, if the value of `1` is changed after having set a value for `2`, the value of `2` will be cleared.
+
+### Ternary
+
+In specific cases you will want a type that is either a constant value type dynamic type specification based on the current value of that input/field.
+
+```txt
+Transfer {0<amount:[(1)>=20?1:uint256]>} {1<tokenType:uint256>}
+```
