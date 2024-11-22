@@ -431,6 +431,29 @@ describe("parseCordSentence with nested conditionals", () => {
 		});
 	});
 
+	it("should correctly parse nested conditional type inverse order", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)==200?[(2)==200?2:3]:1]>} {1<value:uint256=100>} {2<value:uint256=200>}"
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		const input = result.value.inputs[0];
+		expect(input.type).toMatchObject({
+			left: { reference: 1 },
+			operator: "==",
+			right: "200",
+			trueType: {
+				left: { reference: 2 },
+				operator: "==",
+				right: "200",
+				trueType: { constant: "2" },
+				falseType: { constant: "3" }
+			},
+			falseType: { constant: "1" },
+		});
+	});
+
 	it("should handle simple nested if-else", () => {
 		const result = parseCordSentence(
 			"Transfer {0<amount:[(1)==100?1:[(2)==200?2:3]]>} {1<value:uint256=100>} {2<value:uint256=200>}"

@@ -7,7 +7,7 @@ import {
 } from "../lib";
 import { parseTypeString } from "./types";
 import { validateInputSequence } from "../validate";
-import { compareValues } from "./comparison";
+import { compareValues } from "./values";
 
 export const parseCordSentence = (
    sentence: string
