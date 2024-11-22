@@ -11,6 +11,16 @@ describe("parseCordSentence", () => {
 		expect(result.value.inputs[0]).toEqual({ index: 0 });
 	});
 
+	// TODO: (#16): This will fail because it does not have an associated type.
+	// it("should parse placeholders with name", () => {
+	// 	const result = parseCordSentence("Transfer {0<amount>} {1<token>} to {2<recipient>}");
+	// 	expect(result.success).toBe(true);
+	// 	if (!result.success) return;
+	//
+	// 	expect(result.value.inputs).toHaveLength(3);
+	// 	expect(result.value.inputs[0]).toEqual({ index: 0 });
+	// });
+
 	it("should parse named inputs", () => {
 		const result = parseCordSentence(
 			"Transfer {0<amount>} {1<token>} to {2}"
