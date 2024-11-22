@@ -1,58 +1,42 @@
-import { isEvmType, validateEvmValue } from "../validate";
 import {
 	EvmType,
-	CompoundType,
 	ConstantType,
 	InputType,
 	ComparisonOperator,
+	ComparisonValue,
 } from "../lib";
+import { isEvmType, validateEvmValue } from "../validate";
 
-export const parseTypeString = (
-	typeString: string
-): {
-	type: InputType;
-	defaultValue?: string;
-} => {
-	if (typeString.startsWith("[") && typeString.endsWith("]")) {
-		const inner = typeString.slice(1, -1);
+export const parseValue = (str: string): ComparisonValue =>
+	str.startsWith("(") && str.endsWith(")")
+		? { reference: Number(str.slice(1, -1)) }
+		: str;
 
-		const match = inner.match(
-			/^([^=<>!]+)(==|>=|<=|>|<|!=)([^?]+)\?(\w+):(\w+)$/
-		);
-		if (match) {
-			const [_, leftStr, operator, rightStr, trueTypeStr, falseTypeStr] =
-				match;
+export const parseTypeValue = (str: string): InputType =>
+	str.startsWith("[") && str.endsWith("]")
+		? parseConditionalType(str.slice(1, -1)).type
+		: isEvmType(str)
+			? str as EvmType
+			: { constant: str };
 
-			const left =
-				leftStr.startsWith("(") && leftStr.endsWith(")")
-					? { reference: Number(leftStr.slice(1, -1)) }
-					: leftStr;
+export const parseConditionalType = (inner: string): { type: InputType } => {
+	const match = inner.match(/^([^=<>!]+)(==|>=|<=|>|<|!=)([^?]+)\?([^:]+):(.+)$/);
+	if (!match) throw new Error("Invalid conditional type syntax");
 
-			const right =
-				rightStr.startsWith("(") && rightStr.endsWith(")")
-					? { reference: Number(rightStr.slice(1, -1)) }
-					: rightStr.trim();
+	const [_, leftStr, operator, rightStr, trueTypeStr, falseStr] = match;
 
-			const trueType = isEvmType(trueTypeStr)
-				? (trueTypeStr as EvmType)
-				: { constant: trueTypeStr };
-
-			const falseType = isEvmType(falseTypeStr)
-				? (falseTypeStr as EvmType)
-				: { constant: falseTypeStr };
-
-			return {
-				type: {
-					left,
-					operator: operator as ComparisonOperator,
-					right,
-					trueType,
-					falseType,
-				},
-			};
+	return {
+		type: {
+			left: parseValue(leftStr),
+			operator: operator as ComparisonOperator,
+			right: parseValue(rightStr.trim()),
+			trueType: parseTypeValue(trueTypeStr),
+			falseType: parseTypeValue(falseStr)
 		}
-	}
+	};
+};
 
+export const parseRegularType = (typeString: string) => {
 	const parts = typeString.split(":");
 	const types: (EvmType | ConstantType)[] = [];
 	const defaults: (string | undefined)[] = [];
@@ -62,7 +46,6 @@ export const parseTypeString = (
 		const type: EvmType | ConstantType = isEvmType(partTypeStr)
 			? (partTypeStr as EvmType)
 			: { constant: partTypeStr };
-
 		if (partDefaultValue !== undefined) {
 			if (!validateEvmValue(partDefaultValue, type)) {
 				throw new Error(
@@ -79,9 +62,9 @@ export const parseTypeString = (
 	const type: InputType =
 		types.length > 1
 			? {
-					baseType: types[0],
-					metadata: types.slice(1),
-			  }
+				baseType: types[0],
+				metadata: types.slice(1),
+			}
 			: types[0];
 
 	const definedDefaults = defaults.filter(
@@ -93,15 +76,15 @@ export const parseTypeString = (
 	return { type, defaultValue: finalDefaultValue };
 };
 
-export const parseCompoundType = (type: string): CompoundType | null => {
-	const types = type.split(":");
-	if (types.length === 1) return null;
+export const parseTypeString = (
+	typeString: string
+): {
+	type: InputType;
+	defaultValue?: string;
+} => {
+	if (typeString.startsWith("[") && typeString.endsWith("]")) {
+		return parseConditionalType(typeString.slice(1, -1));
+	}
 
-	const [baseType, ...metadata] = types;
-	if (!isEvmType(baseType) || !metadata.every(isEvmType)) return null;
-
-	return {
-		baseType: baseType as EvmType,
-		metadata: metadata as EvmType[],
-	};
+	return parseRegularType(typeString);
 };

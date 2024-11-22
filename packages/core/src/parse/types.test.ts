@@ -406,3 +406,84 @@ describe("parseCordSentence with comparison based types", () => {
 		});
 	});
 });
+
+describe("parseCordSentence with nested conditionals", () => {
+	it("should correctly parse nested conditional type", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)==200?1:[(2)==200?2:3]]>} {1<value:uint256=100>} {2<value:uint256=200>}"
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		const input = result.value.inputs[0];
+		expect(input.type).toMatchObject({
+			left: { reference: 1 },
+			operator: "==",
+			right: "200",
+			trueType: { constant: "1" },
+			falseType: {
+				left: { reference: 2 },
+				operator: "==",
+				right: "200",
+				trueType: { constant: "2" },
+				falseType: { constant: "3" }
+			}
+		});
+	});
+
+	it("should handle simple nested if-else", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)==100?1:[(2)==200?2:3]]>} {1<value:uint256=100>} {2<value:uint256=200>}"
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		expect(result.value.values.get(0)).toBe("1");
+	});
+
+	it("should handle first false, second true case", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)==200?1:[(2)==200?2:3]]>} {1<value:uint256=100>} {2<value:uint256=200>}"
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		expect(result.value.values.get(0)).toBe("2");
+	});
+
+	it("should handle all conditions false", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)==200?1:[(2)==300?2:3]]>} {1<value:uint256=100>} {2<value:uint256=200>}"
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		expect(result.value.values.get(0)).toBe("3");
+	});
+
+	it("should handle deeply nested conditions", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)==100?1:[(2)==200?2:[(3)==300?4:5]]>} {1<value:uint256=100>} {2<value:uint256=200>} {3<value:uint256=400>}"
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		expect(result.value.values.get(0)).toBe("1");
+	});
+
+	it("should validate all nested types correctly", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)==100?uint256:[(2)==200?address:bool]]>} {1<value:uint256=100>} {2<value:uint256=200>}"
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		const setResult = setValue({
+			parsedSentence: result.value,
+			currentValues: result.value.values,
+			index: 0,
+			value: "123"
+		});
+		expect(setResult.success).toBe(true);
+	});
+});
