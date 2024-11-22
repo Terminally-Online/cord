@@ -97,3 +97,9 @@ In the above, we've compared a reference value `(1)` to a constant value of `20`
 ```txt
 Transfer {0<amount:[(1)==(2)?1:uint256]>} {1<value:uint256=100>} {2<amount:uint256=100>}
 ```
+
+Further, you have the ability to implement nested ternaries in the case that you have a set of controllers you need:
+
+```txt
+Transfer {0<amount:[(1)==100?1:[(2)==200?2:[(3)==300?4:5]]>} {1<value:uint256=100>} {2<value:uint256=200>} {3<value:uint256=400>}
+```
