@@ -1,13 +1,13 @@
 import { InputReference, InputValues, ParsedCordSentence } from "../lib";
 
 export const isComplete = (
-    parsedSentence: ParsedCordSentence,
-    values: InputValues
+	parsedSentence: ParsedCordSentence,
+	values: InputValues
 ): boolean => {
-    return parsedSentence.inputs.every((input) => values.has(input.index));
+	return parsedSentence.inputs.every((input) => values.has(input.index));
 };
 
 export const validateInputSequence = (inputs: InputReference[]): boolean => {
-    const indices = inputs.map((input) => input.index).sort((a, b) => a - b);
-    return indices.every((idx, i) => idx === i);
+	const indices = inputs.map((input) => input.index).sort((a, b) => a - b);
+	return indices.every((idx, i) => idx === i);
 };
