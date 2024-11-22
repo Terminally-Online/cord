@@ -14,9 +14,9 @@ export type ComparisonOperator = "==" | ">" | "<" | ">=" | "<=" | "!=";
 export type ComparisonValue = string | { reference: number };
 
 export type ConditionalType = {
-    reference: number;
+    left: ComparisonValue;
     operator: ComparisonOperator;
-    checkValue: ComparisonValue;
+    right: ComparisonValue;
     trueType: InputType;
     falseType: InputType;
 };

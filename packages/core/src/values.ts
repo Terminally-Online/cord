@@ -18,23 +18,18 @@ export const setValue = <
   const input = parsedSentence.inputs[index];
   if (!input?.type) return { success: false, error: "Invalid input" };
 
-  if (typeof input.type === "object" && "reference" in input.type) {
-    const refValue = currentValues.get(input.type.reference);
-    if (refValue === undefined) {
-      return {
-        success: false,
-        error: `Referenced input ${input.type.reference} has no value`,
-      };
-    }
+  if (typeof input.type === "object" && "left" in input.type) {
     const conditionMet = compareValues(
-      refValue,
+      input.type.left,
       input.type.operator,
-      input.type.checkValue,
+      input.type.right,
       currentValues
     );
+
     const activeType = conditionMet
       ? input.type.trueType
       : input.type.falseType;
+
     if (!validateEvmValue(value, activeType)) {
       return { success: false, error: "Invalid value for conditional type" };
     }
@@ -66,6 +61,7 @@ export const setValue = <
       }
     });
   }
+
   return { success: true, value: newValues };
 };
 
@@ -74,7 +70,6 @@ export const resolveSentence = (
   values?: InputValues
 ): Result<string> => {
   try {
-    // Use the provided values if they exist, otherwise use the parsed values
     const resolveValues = values || parsedSentence.values;
 
     const resolved = parsedSentence.template.replace(

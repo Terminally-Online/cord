@@ -1,144 +1,124 @@
 import { isEvmType, validateEvmValue } from "../validate";
 import {
-    EvmType,
-    CompoundType,
-    ConstantType,
-    InputType,
-    ConditionalType,
-    ComparisonOperator,
+  EvmType,
+  CompoundType,
+  ConstantType,
+  InputType,
+  ComparisonOperator,
 } from "../lib";
 
 export const parseTypeString = (
-    typeString: string
+  typeString: string
 ): {
-    type: InputType;
-    defaultValue?: string;
+  type: InputType;
+  defaultValue?: string;
 } => {
-    // Check for conditional type first
-    if (typeString.startsWith("[") && typeString.endsWith("]")) {
-        const inner = typeString.slice(1, -1);
-        // Updated regex to handle string values
-        const match = inner.match(
-            /^\((\d+)\)(==|>=|<=|>|<|!=)([^?]+)\?(\w+):(\w+)$/
-        );
-        if (match) {
-            const [
-                _,
-                reference,
-                operator,
-                checkValue,
-                trueTypeStr,
-                falseTypeStr,
-            ] = match;
+  if (typeString.startsWith("[") && typeString.endsWith("]")) {
+    const inner = typeString.slice(1, -1);
 
-            const trueType = isEvmType(trueTypeStr)
-                ? (trueTypeStr as EvmType)
-                : { constant: trueTypeStr };
-
-            const falseType = isEvmType(falseTypeStr)
-                ? (falseTypeStr as EvmType)
-                : { constant: falseTypeStr };
-
-            return {
-                type: {
-                    reference: Number(reference),
-                    operator: operator as ComparisonOperator,
-                    checkValue,
-                    trueType,
-                    falseType,
-                },
-            };
-        }
-    }
-
-    // Handle non-conditional types with defaults
-    const parts = typeString.split(":");
-    const types: (EvmType | ConstantType)[] = [];
-    const defaults: (string | undefined)[] = [];
-
-    parts.forEach((part) => {
-        const [partTypeStr, partDefaultValue] = part.split("=");
-
-        const type: EvmType | ConstantType = isEvmType(partTypeStr)
-            ? (partTypeStr as EvmType)
-            : { constant: partTypeStr };
-
-        if (partDefaultValue !== undefined) {
-            if (!validateEvmValue(partDefaultValue, type)) {
-                throw new Error(
-                    typeof type === "object"
-                        ? `Invalid default value "${partDefaultValue}" for constant(${type.constant})`
-                        : `Invalid default value "${partDefaultValue}" for type ${type}`
-                );
-            }
-        }
-
-        types.push(type);
-        defaults.push(partDefaultValue);
-    });
-
-    const type: InputType =
-        types.length > 1
-            ? {
-                  baseType: types[0],
-                  metadata: types.slice(1),
-              }
-            : types[0];
-
-    const definedDefaults = defaults.filter(
-        (d): d is string => d !== undefined
+    const match = inner.match(
+      /^([^=<>!]+)(==|>=|<=|>|<|!=)([^?]+)\?(\w+):(\w+)$/
     );
-    const finalDefaultValue =
-        definedDefaults.length > 0 ? definedDefaults.join(":") : undefined;
+    if (match) {
+      const [_, leftStr, operator, rightStr, trueTypeStr, falseTypeStr] = match;
 
-    return { type, defaultValue: finalDefaultValue };
-};
+      const left =
+        leftStr.startsWith("(") && leftStr.endsWith(")")
+          ? { reference: Number(leftStr.slice(1, -1)) }
+          : leftStr;
 
-export const parseCompoundType = (type: string): CompoundType | null => {
-    const types = type.split(":");
-    if (types.length === 1) return null;
+      const right =
+        rightStr.startsWith("(") && rightStr.endsWith(")")
+          ? { reference: Number(rightStr.slice(1, -1)) }
+          : rightStr.trim();
 
-    const [baseType, ...metadata] = types;
-    if (!isEvmType(baseType) || !metadata.every(isEvmType)) return null;
-
-    return {
-        baseType: baseType as EvmType,
-        metadata: metadata as EvmType[],
-    };
-};
-
-export const parseConditionalType = (
-    typeStr: string
-): ConditionalType | null => {
-    const match = typeStr.match(
-        /^\[(\(\d+\))(==|>=|<=|>|<|!=)(\(\d+\)|\w+)\?(\w+):(\w+)\]$/
-    );
-    if (!match) return null;
-
-    const [_, refStr, operator, checkValueStr, trueTypeStr, falseTypeStr] =
-        match;
-
-    // Extract reference number
-    const reference = Number(refStr.slice(1, -1));
-
-    // Parse check value - could be a reference or literal
-    const checkValue = /^\(\d+\)$/.test(checkValueStr)
-        ? { reference: Number(checkValueStr.slice(1, -1)) }
-        : checkValueStr;
-
-    const trueType = isEvmType(trueTypeStr)
+      const trueType = isEvmType(trueTypeStr)
         ? (trueTypeStr as EvmType)
         : { constant: trueTypeStr };
 
-    const falseType = isEvmType(falseTypeStr)
+      const falseType = isEvmType(falseTypeStr)
         ? (falseTypeStr as EvmType)
         : { constant: falseTypeStr };
 
-    return {
-        reference,
-        operator: operator as ComparisonOperator,
-        checkValue,
-        trueType,
-        falseType,
-    };
+      return {
+        type: {
+          left,
+          operator: operator as ComparisonOperator,
+          right,
+          trueType,
+          falseType,
+        },
+      };
+    }
+  }
+
+  const parts = typeString.split(":");
+  const types: (EvmType | ConstantType)[] = [];
+  const defaults: (string | undefined)[] = [];
+
+  parts.forEach((part) => {
+    const [partTypeStr, partDefaultValue] = part.split("=");
+    const type: EvmType | ConstantType = isEvmType(partTypeStr)
+      ? (partTypeStr as EvmType)
+      : { constant: partTypeStr };
+
+    if (partDefaultValue !== undefined) {
+      if (!validateEvmValue(partDefaultValue, type)) {
+        throw new Error(
+          typeof type === "object"
+            ? `Invalid default value "${partDefaultValue}" for constant(${type.constant})`
+            : `Invalid default value "${partDefaultValue}" for type ${type}`
+        );
+      }
+    }
+    types.push(type);
+    defaults.push(partDefaultValue);
+  });
+
+  const type: InputType =
+    types.length > 1
+      ? {
+          baseType: types[0],
+          metadata: types.slice(1),
+        }
+      : types[0];
+
+  const definedDefaults = defaults.filter((d): d is string => d !== undefined);
+  const finalDefaultValue =
+    definedDefaults.length > 0 ? definedDefaults.join(":") : undefined;
+
+  return { type, defaultValue: finalDefaultValue };
 };
+
+export const parseCompoundType = (type: string): CompoundType | null => {
+  const types = type.split(":");
+  if (types.length === 1) return null;
+
+  const [baseType, ...metadata] = types;
+  if (!isEvmType(baseType) || !metadata.every(isEvmType)) return null;
+
+  return {
+    baseType: baseType as EvmType,
+    metadata: metadata as EvmType[],
+  };
+};
+
+//
+
+//
+
+//
+
+//
+
+//
+
+//
+
+//
+
+//
+
+//
+
+//
