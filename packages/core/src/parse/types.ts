@@ -3,34 +3,43 @@ import {
 	ConstantType,
 	InputType,
 	ComparisonOperator,
-	ComparisonValue,
 } from "../lib";
 import { isEvmType, validateEvmValue } from "../validate";
-
-export const parseValue = (str: string): ComparisonValue =>
-	str.startsWith("(") && str.endsWith(")")
-		? { reference: Number(str.slice(1, -1)) }
-		: str;
-
-export const parseTypeValue = (str: string): InputType =>
-	str.startsWith("[") && str.endsWith("]")
-		? parseConditionalType(str.slice(1, -1)).type
-		: isEvmType(str)
-			? str as EvmType
-			: { constant: str };
+import { parseTypeValue, parseValue } from "./values";
 
 export const parseConditionalType = (inner: string): { type: InputType } => {
-	const match = inner.match(/^([^=<>!]+)(==|>=|<=|>|<|!=)([^?]+)\?([^:]+):(.+)$/);
-	if (!match) throw new Error("Invalid conditional type syntax");
+	const questionIndex = inner.indexOf('?');
+	if (questionIndex === -1) throw new Error("Missing question mark in conditional");
 
-	const [_, leftStr, operator, rightStr, trueTypeStr, falseStr] = match;
+	const condition = inner.substring(0, questionIndex);
+	const remainingPart = inner.substring(questionIndex + 1);
+
+	let colonIndex = -1;
+	let inBrackets = 0;
+	for (let i = 0; i < remainingPart.length; i++) {
+		if (remainingPart[i] === '[') inBrackets++;
+		if (remainingPart[i] === ']') inBrackets--;
+		if (remainingPart[i] === ':' && inBrackets === 0) {
+			colonIndex = i;
+			break;
+		}
+	}
+
+	if (colonIndex === -1) throw new Error("Missing colon in conditional");
+
+	const trueStr = remainingPart.substring(0, colonIndex).trim();
+	const falseStr = remainingPart.substring(colonIndex + 1).trim();
+
+	const conditionMatch = condition.match(/^([^=<>!]+)(==|>=|<=|>|<|!=)([^?]+)$/);
+	if (!conditionMatch) throw new Error("Invalid condition format");
+	const [_, leftStr, operator, rightStr] = conditionMatch;
 
 	return {
 		type: {
-			left: parseValue(leftStr),
+			left: parseValue(leftStr.trim()),
 			operator: operator as ComparisonOperator,
 			right: parseValue(rightStr.trim()),
-			trueType: parseTypeValue(trueTypeStr),
+			trueType: parseTypeValue(trueStr),
 			falseType: parseTypeValue(falseStr)
 		}
 	};

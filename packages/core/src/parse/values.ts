@@ -1,4 +1,18 @@
-import { ComparisonOperator, ComparisonValue, InputValues } from "../lib";
+import { ComparisonOperator, ComparisonValue, EvmType, InputType, InputValues } from "../lib";
+import { parseConditionalType } from "./types";
+import { isEvmType } from "../validate";
+
+export const parseTypeValue = (str: string): InputType => {
+	if (str.startsWith('[') && str.endsWith(']')) {
+		return parseConditionalType(str.slice(1, -1)).type;
+	}
+	return isEvmType(str) ? str as EvmType : { constant: str };
+};
+
+export const parseValue = (str: string): ComparisonValue =>
+	str.startsWith('(') && str.endsWith(')')
+		? { reference: Number(str.slice(1, -1)) }
+		: str;
 
 export const resolveValue = (
 	value: ComparisonValue,
