@@ -4,8 +4,8 @@ export const createInitialState = (): InputValues => new Map();
 
 export const getInputValue = (
 	values: InputValues,
-	index: number
-): string | undefined => values.get(index);
+	index: number,
+): string | undefined => values.get(index)?.value;
 
 export const hasValue = (values: InputValues, index: number): boolean =>
 	values.has(index);

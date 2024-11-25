@@ -111,7 +111,7 @@ describe("parseCordSentence with compound types and defaults", () => {
 
 		expect(setTokenResult.success).toBe(true);
 		if (!setTokenResult.success) return;
-		expect(setTokenResult.value.get(0)).toBe("1");
+		expect(setTokenResult.value.get(0)?.value).toBe("1");
 	});
 });
 
@@ -314,8 +314,12 @@ describe("parseCordSentence with comparison based types", () => {
 						expect(result.success).toBe(true);
 						if (!result.success) return;
 
-						expect(result.value.values.get(1)).toBe(matchValue);
-						expect(result.value.values.get(0)).toBe(expectedType);
+						expect(result.value.values.get(1)?.value).toBe(
+							matchValue,
+						);
+						expect(result.value.values.get(0)?.value).toBe(
+							expectedType,
+						);
 					});
 
 					it(`should handle fallback type when condition is not met (${nonMatchValue})`, () => {
@@ -328,7 +332,9 @@ describe("parseCordSentence with comparison based types", () => {
 						expect(result.success).toBe(true);
 						if (!result.success) return;
 
-						expect(result.value.values.get(1)).toBe(nonMatchValue);
+						expect(result.value.values.get(1)?.value).toBe(
+							nonMatchValue,
+						);
 						expect(result.value.values.has(0)).toBe(false);
 					});
 				});
@@ -344,8 +350,8 @@ describe("parseCordSentence with comparison based types", () => {
 			expect(result.success).toBe(true);
 			if (!result.success) return;
 
-			expect(result.value.values.get(1)).toBe("ERC721");
-			expect(result.value.values.get(0)).toBe("1");
+			expect(result.value.values.get(1)?.value).toBe("ERC721");
+			expect(result.value.values.get(0)?.value).toBe("1");
 		});
 	});
 
@@ -357,8 +363,8 @@ describe("parseCordSentence with comparison based types", () => {
 			expect(result.success).toBe(true);
 			if (!result.success) return;
 
-			expect(result.value.values.get(1)).toBe("100");
-			expect(result.value.values.get(0)).toBe("1");
+			expect(result.value.values.get(1)?.value).toBe("100");
+			expect(result.value.values.get(0)?.value).toBe("1");
 		});
 
 		it("should handle multiple reference comparisons", () => {
@@ -367,9 +373,9 @@ describe("parseCordSentence with comparison based types", () => {
 			);
 			expect(result.success).toBe(true);
 			if (!result.success) return;
-			expect(result.value.values.get(1)).toBe("100");
-			expect(result.value.values.get(2)).toBe("100");
-			expect(result.value.values.get(0)).toBe("1");
+			expect(result.value.values.get(1)?.value).toBe("100");
+			expect(result.value.values.get(2)?.value).toBe("100");
+			expect(result.value.values.get(0)?.value).toBe("1");
 		});
 
 		it("should handle unequal reference values", () => {
@@ -378,8 +384,8 @@ describe("parseCordSentence with comparison based types", () => {
 			);
 			expect(result.success).toBe(true);
 			if (!result.success) return;
-			expect(result.value.values.get(1)).toBe("100");
-			expect(result.value.values.get(2)).toBe("200");
+			expect(result.value.values.get(1)?.value).toBe("100");
+			expect(result.value.values.get(2)?.value).toBe("200");
 			expect(result.value.values.has(0)).toBe(false);
 		});
 
@@ -390,8 +396,8 @@ describe("parseCordSentence with comparison based types", () => {
 			expect(result.success).toBe(true);
 			if (!result.success) return;
 
-			expect(result.value.values.get(1)).toBe("100");
-			expect(result.value.values.get(0)).toBe("1");
+			expect(result.value.values.get(1)?.value).toBe("100");
+			expect(result.value.values.get(0)?.value).toBe("1");
 		});
 
 		it("should handle value-to-reference comparisons", () => {
@@ -400,8 +406,8 @@ describe("parseCordSentence with comparison based types", () => {
 			);
 			expect(result.success).toBe(true);
 			if (!result.success) return;
-			expect(result.value.values.get(1)).toBe("100");
-			expect(result.value.values.get(0)).toBe("1");
+			expect(result.value.values.get(1)?.value).toBe("100");
+			expect(result.value.values.get(0)?.value).toBe("1");
 		});
 
 		it("should handle value-to-reference greater than", () => {
@@ -410,8 +416,8 @@ describe("parseCordSentence with comparison based types", () => {
 			);
 			expect(result.success).toBe(true);
 			if (!result.success) return;
-			expect(result.value.values.get(1)).toBe("100");
-			expect(result.value.values.get(0)).toBe("1");
+			expect(result.value.values.get(1)?.value).toBe("100");
+			expect(result.value.values.get(0)?.value).toBe("1");
 		});
 
 		it("should handle value-to-reference less than", () => {
@@ -420,8 +426,8 @@ describe("parseCordSentence with comparison based types", () => {
 			);
 			expect(result.success).toBe(true);
 			if (!result.success) return;
-			expect(result.value.values.get(1)).toBe("100");
-			expect(result.value.values.get(0)).toBe("1");
+			expect(result.value.values.get(1)?.value).toBe("100");
+			expect(result.value.values.get(0)?.value).toBe("1");
 		});
 	});
 });
@@ -480,7 +486,7 @@ describe("parseCordSentence with nested conditionals", () => {
 		expect(result.success).toBe(true);
 		if (!result.success) return;
 
-		expect(result.value.values.get(0)).toBe("1");
+		expect(result.value.values.get(0)?.value).toBe("1");
 	});
 
 	it("should handle first false, second true case", () => {
@@ -490,7 +496,7 @@ describe("parseCordSentence with nested conditionals", () => {
 		expect(result.success).toBe(true);
 		if (!result.success) return;
 
-		expect(result.value.values.get(0)).toBe("2");
+		expect(result.value.values.get(0)?.value).toBe("2");
 	});
 
 	it("should handle all conditions false", () => {
@@ -500,16 +506,16 @@ describe("parseCordSentence with nested conditionals", () => {
 		expect(result.success).toBe(true);
 		if (!result.success) return;
 
-		expect(result.value.values.get(0)).toBe("3");
+		expect(result.value.values.get(0)?.value).toBe("3");
 	});
 
 	it("should handle deeply nested conditions", () => {
 		const result = parseCordSentence(
-			"Transfer {0<amount:[(1)==100?1:[(2)==200?2:[(3)==300?4:5]]>} {1<value:uint256=100>} {2<value:uint256=200>} {3<value:uint256=400>}",
+			"Transfer {0<amount:[(1)==100?1:[(2)==200?2:[(3)==300?4:5]]]>} {1<value:uint256=100>} {2<value:uint256=200>} {3<value:uint256=400>}",
 		);
 		expect(result.success).toBe(true);
 		if (!result.success) return;
 
-		expect(result.value.values.get(0)).toBe("1");
+		expect(result.value.values.get(0)?.value).toBe("1");
 	});
 });

@@ -48,7 +48,7 @@ export const setValue = ({
 	}
 
 	// If value hasn't changed, return current state
-	const currentValue = currentValues.get(index);
+	const currentValue = currentValues.get(index)?.value;
 	if (currentValue === value) {
 		return {
 			success: true,
@@ -58,7 +58,7 @@ export const setValue = ({
 	}
 
 	// Set the new value
-	newValues.set(index, value);
+	newValues.set(index, { value: value });
 
 	// Re-evaluate all conditional types
 	parsedSentence.inputs.forEach((input) => {
@@ -82,7 +82,7 @@ export const setValue = ({
 				typeof resolvedType === "object" &&
 				"constant" in resolvedType
 			) {
-				newValues.set(input.index, resolvedType.constant);
+				newValues.set(input.index, { value: resolvedType.constant });
 			}
 		}
 	});

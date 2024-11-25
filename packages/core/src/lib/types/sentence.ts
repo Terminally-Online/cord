@@ -1,8 +1,6 @@
 import { EvmType } from "./evm";
 
-export type ConstantType = {
-	constant: string;
-};
+export type ConstantType = { constant: string };
 
 export type CompoundType = {
 	baseType: EvmType | ConstantType;
@@ -10,10 +8,8 @@ export type CompoundType = {
 };
 
 export type ComparisonOperator = "==" | ">" | "<" | ">=" | "<=" | "!=";
-
 export type ComparisonValue = string | { reference: number; part?: number };
-
-export type ConditionalType = {
+export type ComparisonType = {
 	left: ComparisonValue;
 	operator: ComparisonOperator;
 	right: ComparisonValue;
@@ -21,8 +17,7 @@ export type ConditionalType = {
 	falseType: InputType;
 };
 
-export type InputType = EvmType | ConstantType | CompoundType | ConditionalType;
-
+export type InputType = EvmType | ConstantType | CompoundType | ComparisonType;
 export type InputReference = {
 	index: number;
 	name?: string;
@@ -32,15 +27,9 @@ export type InputReference = {
 	delimiter?: string;
 };
 
-export type InputError = {
-	type: "validation" | "resolution";
-	message: string;
-};
-
-export type InputState = {
-	value: string;
-	error?: InputError;
-};
+export type InputError = { type: "validation" | "resolution"; message: string };
+export type InputState = { value: string; error?: InputError };
+export type InputValues = Map<number, InputState>;
 
 export type ParsedCordSentence = {
 	raw: string;
@@ -52,8 +41,6 @@ export type ParsedCordSentence = {
 export type Result<T> =
 	| { success: true; value: T }
 	| { success: false; error: string };
-
-export type InputValues = Map<number, string>;
 
 export type SetValueResult = {
 	success: true;

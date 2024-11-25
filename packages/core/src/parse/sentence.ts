@@ -4,6 +4,7 @@ import {
 	InputReference,
 	PLACEHOLDER_PATTERN,
 	InputType,
+	InputState,
 } from "../lib";
 import { parseTypeString } from "./types";
 import { validateInputSequence } from "../validate";
@@ -14,7 +15,7 @@ export const parseCordSentence = (
 ): Result<ParsedCordSentence> => {
 	try {
 		const inputs: InputReference[] = [];
-		const values = new Map<number, string>();
+		const values = new Map<number, InputState>();
 
 		// First pass: collect inputs and set defaults
 		const template = sentence.replace(
@@ -36,7 +37,7 @@ export const parseCordSentence = (
 						...(delimiter && { delimiter }),
 					});
 					if (defaultValue) {
-						values.set(inputIndex, defaultValue);
+						values.set(inputIndex, { value: defaultValue });
 					}
 					return `{${index}}`;
 				} catch (error) {
@@ -70,7 +71,7 @@ export const parseCordSentence = (
 					typeof resolvedType === "object" &&
 					"constant" in resolvedType
 				) {
-					values.set(inputIndex, resolvedType.constant);
+					values.set(inputIndex, { value: resolvedType.constant });
 				}
 
 				return resolvedType;
@@ -93,7 +94,7 @@ export const parseCordSentence = (
 					typeof resolvedType === "object" &&
 					"constant" in resolvedType
 				) {
-					values.set(input.index, resolvedType.constant);
+					values.set(input.index, { value: resolvedType.constant });
 				}
 			}
 		});

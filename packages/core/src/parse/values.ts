@@ -32,11 +32,11 @@ export const resolveValue = (
 	values: InputValues,
 ): string | undefined => {
 	if (typeof value === "object") {
-		return values.get(value.reference);
+		return values.get(value.reference)?.value;
 	}
 
 	if (value.startsWith("(") && value.endsWith(")")) {
-		return values.get(Number(value.slice(1, -1)));
+		return values.get(Number(value.slice(1, -1)))?.value;
 	}
 
 	return value;
@@ -50,7 +50,7 @@ export const compareValues = (
 ): boolean => {
 	const resolveValue = (value: ComparisonValue): string => {
 		if (typeof value === "object") {
-			const rawValue = values.get(value.reference);
+			const rawValue = values.get(value.reference)?.value;
 			if (!rawValue) return "";
 
 			if (value.part !== undefined) {
