@@ -23,7 +23,7 @@ export const ExampleForm = ({
                 {parsed.inputs.map((input) => {
                     const value = getInputValue(input.index);
                     const error = getInputError(input.index);
-                    // Consider empty or whitespace-only values as invalid
+
                     const isEmpty = !value?.trim();
                     const isValid = !isEmpty && !error;
 

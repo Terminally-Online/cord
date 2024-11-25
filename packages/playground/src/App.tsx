@@ -3,7 +3,7 @@ import { ExampleForm } from "@/components/ExampleForm";
 import { ParsedView } from "@/components/ParsedView";
 import { useState } from "react";
 
-const SENTENCE = "Transfer {0<amount:uint256>} {1<token:address:uint256:uint256>} {2<id:uint256>} to {3<recipient:address>}";
+const SENTENCE = "Transfer {0<amount:[(1)>=20?1:uint256]>} {1<tokenType:uint256>}";
 
 export const App = () => {
 	const [sentence, setSentence] = useState(SENTENCE);

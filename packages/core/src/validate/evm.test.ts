@@ -125,7 +125,7 @@ describe("validateEvmValue", () => {
 	describe("string", () => {
 		it("should validate strings", () => {
 			expect(validateEvmValue("hello", "string")).toBe(true);
-			expect(validateEvmValue("", "string")).toBe(true);
+			expect(validateEvmValue("", "string")).toBe(false);
 			expect(validateEvmValue("12345", "string")).toBe(true);
 		});
 	});
