@@ -4,12 +4,12 @@ import { setValue, resolveSentence } from "../values";
 import { createInitialState } from "../state";
 import { ParsedCordSentence, InputValues, InputReference } from "../lib";
 
-type ValidationError = {
+export type ValidationError = {
    type: "validation";
    message: string;
 };
 
-type CordError = {
+export type CordError = {
    type: "parse" | "resolution" | "validation";
    message: string;
 };

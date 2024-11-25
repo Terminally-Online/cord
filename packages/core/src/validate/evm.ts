@@ -9,6 +9,8 @@ const maxIntValue = (bits: number): bigint => 2n ** BigInt(bits - 1) - 1n;
 const minIntValue = (bits: number): bigint => -(2n ** BigInt(bits - 1));
 
 export const validateEvmValue = (value: string, type: InputType): boolean => {
+	if (!value.trim()) { return false }
+
 	if (typeof type === "object" && "left" in type) {
 		return true;
 	}

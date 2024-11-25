@@ -1,4 +1,5 @@
 import { InputType, ParsedCordSentence } from "@cord/core";
+import { ValidationError } from "@cord/core/react";
 
 type ExampleFormProps = {
     parsed: ParsedCordSentence | null;
@@ -22,7 +23,9 @@ export const ExampleForm = ({
                 {parsed.inputs.map((input) => {
                     const value = getInputValue(input.index);
                     const error = getInputError(input.index);
-                    const hasValue = value !== undefined;
+                    // Consider empty or whitespace-only values as invalid
+                    const isEmpty = !value?.trim();
+                    const isValid = !isEmpty && !error;
 
                     return (
                         <div key={input.index} className="flex flex-col gap-1">
@@ -44,33 +47,33 @@ export const ExampleForm = ({
                                         }
                                         className={`
                                             w-full p-2 border rounded-md
-                                            ${hasValue 
-                                                ? error 
-                                                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                                                    : 'border-green-300 focus:ring-green-500 focus:border-green-500'
-                                                : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                                            ${isEmpty 
+                                                ? 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                                                : isValid
+                                                    ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
+                                                    : 'border-red-300 focus:ring-red-500 focus:border-red-500'
                                             }
                                         `}
                                         placeholder={getInputPlaceholder(input.type)}
                                     />
-                                    {hasValue && (
+                                    {value && (
                                         <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                                            {error ? (
-                                                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            ) : (
+                                            {isValid ? (
                                                 <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            ) : (
+                                                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                 </svg>
                                             )}
                                         </div>
                                     )}
                                 </div>
                             </div>
-                            {error && (
+                            {(isEmpty || error) && (
                                 <div className="ml-28 text-sm text-red-600">
-                                    {error.message}
+                                    {error?.message || "This field is required"}
                                 </div>
                             )}
                             <div className="ml-28 text-xs text-gray-500">
@@ -84,7 +87,6 @@ export const ExampleForm = ({
     );
 };
 
-// Helper function to get input type description
 const getTypeDescription = (type: InputType | undefined): string => {
     if (!type) return '';
     
@@ -107,7 +109,6 @@ const getTypeDescription = (type: InputType | undefined): string => {
     return '';
 };
 
-// Helper function to get input placeholder
 const getInputPlaceholder = (type: InputType | undefined): string => {
     if (!type) return '';
     
