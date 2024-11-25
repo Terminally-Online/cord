@@ -1,11 +1,12 @@
-import { ParsedCordSentence } from "@cord/core";
+import { InputValues, ParsedCordSentence } from "@cord/core";
 
 type ParsedViewProps = {
     parsed: ParsedCordSentence | null;
     resolvedSentence: string | null;
+	values: InputValues
 };
 
-export const ParsedView = ({ parsed, resolvedSentence }: ParsedViewProps) => {
+export const ParsedView = ({ parsed, resolvedSentence, values }: ParsedViewProps) => {
     if (!parsed) return null;
 
     return (
@@ -24,7 +25,10 @@ export const ParsedView = ({ parsed, resolvedSentence }: ParsedViewProps) => {
             <div className="bg-white rounded-lg shadow-sm">
                 <h2 className="text-lg font-semibold mb-2">Parsed Structure</h2>
                 <pre className="bg-gray-50 p-4 rounded-md overflow-auto text-sm">
-                    {JSON.stringify(parsed, null, 2)}
+                    {JSON.stringify({
+						...parsed,
+						values: Object.fromEntries(values)
+					}, null, 2)}
                 </pre>
             </div>
         </div>
