@@ -4,7 +4,6 @@ import {
 	InputReference,
 	PLACEHOLDER_PATTERN,
 	InputType,
-	InputState,
 } from "../lib";
 import { parseTypeString } from "./types";
 import { validateInputSequence } from "../validate";

@@ -11,7 +11,7 @@ export type CompoundType = {
 
 export type ComparisonOperator = "==" | ">" | "<" | ">=" | "<=" | "!=";
 
-export type ComparisonValue = string | { reference: number };
+export type ComparisonValue = string | { reference: number; part?: number };
 
 export type ConditionalType = {
 	left: ComparisonValue;

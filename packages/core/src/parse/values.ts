@@ -1,22 +1,35 @@
-import { ComparisonOperator, ComparisonValue, EvmType, InputType, InputValues } from "../lib";
+import {
+	ComparisonOperator,
+	ComparisonValue,
+	EvmType,
+	InputType,
+	InputValues,
+} from "../lib";
 import { parseConditionalType } from "./types";
 import { isEvmType } from "../validate";
 
 export const parseTypeValue = (str: string): InputType => {
-	if (str.startsWith('[') && str.endsWith(']')) {
+	if (str.startsWith("[") && str.endsWith("]")) {
 		return parseConditionalType(str.slice(1, -1)).type;
 	}
-	return isEvmType(str) ? str as EvmType : { constant: str };
+	return isEvmType(str) ? (str as EvmType) : { constant: str };
 };
 
-export const parseValue = (str: string): ComparisonValue =>
-	str.startsWith('(') && str.endsWith(')')
-		? { reference: Number(str.slice(1, -1)) }
-		: str;
+export const parseValue = (value: string): ComparisonValue => {
+	const referenceMatch = value.match(/^\((\d+)(?:\.(\d+))?\)$/);
+	if (referenceMatch) {
+		const [_, index, part] = referenceMatch;
+		return {
+			reference: Number(index),
+			...(part && { part: Number(part) }),
+		};
+	}
+	return value;
+};
 
 export const resolveValue = (
 	value: ComparisonValue,
-	values: InputValues
+	values: InputValues,
 ): string | undefined => {
 	if (typeof value === "object") {
 		return values.get(value.reference);
@@ -33,45 +46,37 @@ export const compareValues = (
 	left: ComparisonValue,
 	operator: ComparisonOperator,
 	right: ComparisonValue,
-	values: InputValues
+	values: InputValues,
 ): boolean => {
-	const value1 = resolveValue(left, values);
-	const value2 = resolveValue(right, values);
+	const resolveValue = (value: ComparisonValue): string => {
+		if (typeof value === "object") {
+			const rawValue = values.get(value.reference);
+			if (!rawValue) return "";
 
-	if (value1 === undefined || value2 === undefined) return false;
-
-	if (!isNaN(Number(value1)) && !isNaN(Number(value2))) {
-		const num1 = Number(value1);
-		const num2 = Number(value2);
-
-		switch (operator) {
-			case "==":
-				return num1 === num2;
-			case "!=":
-				return num1 !== num2;
-			case ">":
-				return num1 > num2;
-			case "<":
-				return num1 < num2;
-			case ">=":
-				return num1 >= num2;
-			case "<=":
-				return num1 <= num2;
+			if (value.part !== undefined) {
+				const parts = rawValue.split(":");
+				return parts[value.part] || "";
+			}
+			return rawValue;
 		}
-	}
+		return value;
+	};
+
+	const leftValue = resolveValue(left);
+	const rightValue = resolveValue(right);
 
 	switch (operator) {
 		case "==":
-			return value1 === value2;
+			return leftValue === rightValue;
 		case "!=":
-			return value1 !== value2;
+			return leftValue !== rightValue;
 		case ">":
-			return value1 > value2;
-		case "<":
-			return value1 < value2;
+			return Number(leftValue) > Number(rightValue);
 		case ">=":
-			return value1 >= value2;
+			return Number(leftValue) >= Number(rightValue);
+		case "<":
+			return Number(leftValue) < Number(rightValue);
 		case "<=":
-			return value1 <= value2;
+			return Number(leftValue) <= Number(rightValue);
 	}
 };
