@@ -36,18 +36,6 @@ describe("setValue", () => {
 		}
 	});
 
-	it("should reject invalid uint256 value", () => {
-		const currentValues: InputValues = new Map();
-		const result = setValue({
-			parsedSentence: mockParsedSentence,
-			currentValues,
-			index: 0,
-			value: "not a number",
-		});
-
-		expect(result.success).toBe(false);
-	});
-
 	it("should set valid compound value", () => {
 		const currentValues: InputValues = new Map();
 		const result = setValue({
@@ -63,30 +51,6 @@ describe("setValue", () => {
 				"1:0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
 			);
 		}
-	});
-
-	it("should reject invalid compound value", () => {
-		const currentValues: InputValues = new Map();
-		const result = setValue({
-			parsedSentence: mockParsedSentence,
-			currentValues,
-			index: 1,
-			value: "not:an:address",
-		});
-
-		expect(result.success).toBe(false);
-	});
-
-	it("should reject invalid index", () => {
-		const currentValues: InputValues = new Map();
-		const result = setValue({
-			parsedSentence: mockParsedSentence,
-			currentValues,
-			index: 99,
-			value: "1000000",
-		});
-
-		expect(result.success).toBe(false);
 	});
 
 	it("should preserve existing values when setting new value", () => {

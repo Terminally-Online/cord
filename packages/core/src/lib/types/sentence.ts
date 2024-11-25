@@ -32,11 +32,21 @@ export type InputReference = {
 	delimiter?: string;
 };
 
+export type InputError = { 
+	type: "validation" | "resolution"
+	message: string
+}
+
+export type InputState = { 
+	value: string
+	error?: InputError
+}
+
 export type ParsedCordSentence = {
 	raw: string;
 	template: string;
 	inputs: InputReference[];
-	values: InputValues;
+	values: Map<number, InputState>;
 };
 
 export type Result<T> =
@@ -44,3 +54,9 @@ export type Result<T> =
 	| { success: false; error: string };
 
 export type InputValues = Map<number, string>;
+
+export type SetValueResult = {
+    success: true;
+    value: InputValues;
+    error?: string;
+};
