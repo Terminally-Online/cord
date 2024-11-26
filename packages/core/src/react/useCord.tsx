@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { parseCordSentence } from "../parse";
 import { setValue, resolveSentence } from "../values";
 import { createInitialState } from "../state";
-import { ParsedCordSentence, InputValues, InputReference } from "../lib";
+import { ParsedCordSentence, InputValues, InputReference, InputState } from "../lib";
 
 export type ValidationError = {
 	type: "validation";
@@ -31,7 +31,7 @@ interface UseCordActions {
 }
 
 interface UseCordHelpers {
-	getInputValue: (index: number) => string | undefined;
+	getInputValue: (index: number) => InputState | undefined;
 	getInputError: (index: number) => ValidationError | undefined;
 	getDependentInputs: (index: number) => InputReference[];
 	hasDependency: (index: number) => boolean;
@@ -151,7 +151,7 @@ export const useCord = (sentence: string): UseCordReturn => {
 
 	const helpers: UseCordHelpers = {
 		getInputValue: useCallback(
-			(index: number) => values.get(index)?.value,
+			(index: number) => values.get(index),
 			[values],
 		),
 

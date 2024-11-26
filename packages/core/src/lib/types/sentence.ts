@@ -28,7 +28,11 @@ export type InputReference = {
 };
 
 export type InputError = { type: "validation" | "resolution"; message: string };
-export type InputState = { value: string; error?: InputError };
+export type InputState = {
+	value: string;
+	error?: InputError;
+	isDisabled?: boolean;
+};
 export type InputValues = Map<number, InputState>;
 
 export type ParsedCordSentence = {

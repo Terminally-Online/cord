@@ -169,6 +169,26 @@ describe("parseCordSentence with constant type validation", () => {
 		);
 	});
 
+	it("should disable inputs of constant type", () => {
+		const result = parseCordSentence("Deposit {0<amount:1>}");
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		expect(result.value.values.get(0)?.isDisabled).toBe(true);
+	});
+
+	it("should disable inputs of constant type in conditional", () => {
+		const result = parseCordSentence(
+			"Deposit {0<amount:[(1)==1?1:2]>} {1<token:uint256=1>}",
+		);
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		expect(result.value.values.get(0)?.isDisabled).toBe(true);
+	});
+
 	describe("constant types in compound types", () => {
 		it("should parse compound type with constant as base type", () => {
 			const result = parseCordSentence("Transfer {0<token:1:address>}");

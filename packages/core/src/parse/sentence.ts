@@ -36,7 +36,16 @@ export const parseCordSentence = (
 						...(defaultValue && { defaultValue }),
 						...(delimiter && { delimiter }),
 					});
-					if (defaultValue) {
+					if (
+						type &&
+						typeof type === "object" &&
+						"constant" in type
+					) {
+						values.set(inputIndex, {
+							value: type.constant,
+							isDisabled: true,
+						});
+					} else if (defaultValue) {
 						values.set(inputIndex, { value: defaultValue });
 					}
 					return `{${index}}`;
@@ -71,7 +80,10 @@ export const parseCordSentence = (
 					typeof resolvedType === "object" &&
 					"constant" in resolvedType
 				) {
-					values.set(inputIndex, { value: resolvedType.constant });
+					values.set(inputIndex, {
+						value: resolvedType.constant,
+						isDisabled: true,
+					});
 				}
 
 				return resolvedType;
@@ -94,7 +106,10 @@ export const parseCordSentence = (
 					typeof resolvedType === "object" &&
 					"constant" in resolvedType
 				) {
-					values.set(input.index, { value: resolvedType.constant });
+					values.set(input.index, {
+						value: resolvedType.constant,
+						isDisabled: true,
+					});
 				}
 			}
 		});

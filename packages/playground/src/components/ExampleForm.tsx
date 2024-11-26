@@ -1,10 +1,10 @@
-import { InputType, ParsedCordSentence } from "@cord/core";
+import { InputState, InputType, ParsedCordSentence } from "@cord/core";
 import { ValidationError } from "@cord/core/react";
 
 type ExampleFormProps = {
 	parsed: ParsedCordSentence | null;
 	setValue: (index: number, value: string) => void;
-	getInputValue: (index: number) => string | undefined;
+	getInputValue: (index: number) => InputState | undefined;
 	getInputError: (index: number) => ValidationError | undefined;
 };
 
@@ -31,18 +31,18 @@ export const ExampleForm = ({
 			<h2 className="text-lg font-semibold mb-2">Input Values</h2>
 			<div className="space-y-4">
 				{parsed.inputs.map((input) => {
-					const value = getInputValue(input.index) || "";
+					const value = getInputValue(input.index);
 					const error = getInputError(input.index);
 					const { isConstant, value: constantValue } = isConstantType(
 						input.type,
 					);
 
-					// If it's a constant type and no value is set, set it automatically
+					// TODO: Should not have to set the value here and it should be handled by core.
 					if (isConstant && constantValue && !value) {
 						setValue(input.index, constantValue);
 					}
 
-					const isEmpty = !value?.trim();
+					const isEmpty = !value?.value.trim();
 					const isValid = !isEmpty && !error;
 
 					return (
@@ -59,7 +59,7 @@ export const ExampleForm = ({
 								<div className="flex-1 relative">
 									<input
 										type="text"
-										value={value}
+										value={value?.value}
 										onChange={(e) =>
 											setValue(
 												input.index,
@@ -70,7 +70,7 @@ export const ExampleForm = ({
 										className={`
                                             w-full p-2 border rounded-md
                                             ${
-												isConstant
+												value?.isDisabled
 													? "bg-gray-100 cursor-not-allowed border-gray-300"
 													: isEmpty
 														? "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
@@ -83,7 +83,7 @@ export const ExampleForm = ({
 											input.type,
 										)}
 									/>
-									{value && !isConstant && (
+									{value && !value?.isDisabled && (
 										<div className="absolute right-2 top-1/2 -translate-y-1/2">
 											{isValid ? (
 												<svg

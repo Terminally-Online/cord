@@ -77,12 +77,14 @@ export const setValue = ({
 				? input.type.trueType
 				: input.type.falseType;
 
-			// If resolved to a constant, set its value
 			if (
 				typeof resolvedType === "object" &&
 				"constant" in resolvedType
 			) {
-				newValues.set(input.index, { value: resolvedType.constant });
+				newValues.set(input.index, {
+					value: resolvedType.constant,
+					isDisabled: true,
+				});
 			}
 		}
 	});
