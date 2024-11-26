@@ -32,7 +32,7 @@ f"Send {amount} tokens to {name}"
 
 ```typescript
 // Cord equivalent with types and validation
-"Send {0<amount:uint256>} tokens to {1<recipient:address>}";
+Send {0<amount:uint256>} tokens to {1<recipient:address>}
 ```
 
 ## Validation Rules
