@@ -2,72 +2,31 @@ import { useState, useCallback, useMemo } from "react";
 import { parseCordSentence } from "../parse";
 import { setValue, resolveSentence } from "../values";
 import { createInitialState } from "../state";
-import {
-	ParsedCordSentence,
-	InputValues,
-	InputReference,
-	InputState,
-} from "../lib";
+import { CordState, UseCordReturn } from "../lib";
 
-export type ValidationError = {
-	type: "validation";
-	message: string;
+const initialState: CordState = {
+	values: createInitialState(),
+	parsed: null,
+	resolvedSentence: null,
+	error: null,
+	isDirty: false,
+	validationErrors: new Map(),
 };
-
-export type CordError = {
-	type: "parse" | "resolution" | "validation";
-	message: string;
-};
-
-interface UseCordState {
-	values: InputValues;
-	parsed: ParsedCordSentence | null;
-	resolvedSentence: string | null;
-	error: CordError | null;
-	isDirty: boolean;
-	validationErrors: Map<number, ValidationError>;
-}
-
-interface UseCordActions {
-	setValue: (index: number, value: string) => void;
-	reset: () => void;
-	clear: (index: number) => void;
-	clearAll: () => void;
-}
-
-interface UseCordHelpers {
-	getInputValue: (index: number) => InputState | undefined;
-	getInputError: (index: number) => ValidationError | undefined;
-	getDependentInputs: (index: number) => InputReference[];
-	hasDependency: (index: number) => boolean;
-	isComplete: boolean;
-	isValid: boolean;
-}
-
-interface UseCordReturn {
-	state: UseCordState;
-	actions: UseCordActions;
-	helpers: UseCordHelpers;
-}
 
 export const useCord = (sentence: string): UseCordReturn => {
-	const [values, setValues] = useState<InputValues>(createInitialState());
-	const [error, setError] = useState<CordError | null>(null);
-	const [validationErrors, setValidationErrors] = useState<
-		Map<number, ValidationError>
-	>(new Map());
-	const [isDirty, setIsDirty] = useState(false);
+	const [state, setState] = useState<CordState>(initialState);
 
 	const parsed = useMemo(() => {
 		const result = parseCordSentence(sentence);
 		if (!result.success) {
-			setError({
-				type: "parse",
-				message: result.error,
-			});
+			setState((prev) => ({
+				...prev,
+				error: { type: "parse", message: result.error },
+				parsed: null,
+			}));
 			return null;
 		}
-		setError(null);
+		setState((prev) => ({ ...prev, error: null }));
 		return result.value;
 	}, [sentence]);
 
@@ -75,93 +34,91 @@ export const useCord = (sentence: string): UseCordReturn => {
 		if (!parsed) return null;
 
 		const allInputsHaveValues = parsed.inputs.every((input) =>
-			values.has(input.index),
+			state.values.has(input.index),
 		);
 		if (!allInputsHaveValues) return null;
 
-		const result = resolveSentence(parsed, values);
+		const result = resolveSentence(parsed, state.values);
 		if (!result.success) {
-			setError({
-				type: "resolution",
-				message: result.error,
-			});
+			setState((prev) => ({
+				...prev,
+				error: { type: "resolution", message: result.error },
+			}));
 			return null;
 		}
 		return result.value;
-	}, [parsed, values]);
+	}, [parsed, state.values]);
 
-	const actions: UseCordActions = {
+	const actions = {
 		setValue: useCallback(
 			(index: number, value: string) => {
 				if (!parsed) return;
 
 				const result = setValue({
 					parsedSentence: parsed,
-					currentValues: values,
+					currentValues: state.values,
 					index,
 					value,
 				});
 
-				setValues(result.value);
-				setIsDirty(true);
-
-				if (result.error) {
-					setValidationErrors((current) => {
-						const newErrors = new Map(current);
-						newErrors.set(index, {
-							type: "validation",
-							message: result.error!,
-						});
-						return newErrors;
-					});
-				} else {
-					setValidationErrors((current) => {
-						const newErrors = new Map(current);
-						newErrors.delete(index);
-						return newErrors;
-					});
-				}
+				setState((prev) => ({
+					...prev,
+					values: result.value,
+					isDirty: true,
+					validationErrors: result.error
+						? new Map(prev.validationErrors).set(index, {
+								type: "validation",
+								message: result.error,
+							})
+						: new Map(
+								[...prev.validationErrors].filter(
+									([k]) => k !== index,
+								),
+							),
+				}));
 			},
-			[parsed, values],
+			[parsed, state.values],
 		),
 
 		reset: useCallback(() => {
-			setValues(createInitialState());
-			setValidationErrors(new Map());
-			setError(null);
-			setIsDirty(false);
+			setState(initialState);
 		}, []),
 
 		clear: useCallback((index: number) => {
-			setValues((values) => {
-				const newValues = new Map(values);
+			setState((prev) => {
+				const newValues = new Map(prev.values);
 				newValues.delete(index);
-				return newValues;
+
+				return {
+					...prev,
+					values: newValues,
+					validationErrors: new Map(
+						[...prev.validationErrors].filter(([k]) => k !== index),
+					),
+					isDirty: true,
+				};
 			});
-			setValidationErrors((errors) => {
-				const newErrors = new Map(errors);
-				newErrors.delete(index);
-				return newErrors;
-			});
-			setIsDirty(true);
 		}, []),
 
 		clearAll: useCallback(() => {
-			setValues(createInitialState());
-			setValidationErrors(new Map());
-			setIsDirty(true);
+			setState((prev) => ({
+				...prev,
+				values: createInitialState(),
+				validationErrors: new Map(),
+				isDirty: true,
+			}));
 		}, []),
 	};
 
-	const helpers: UseCordHelpers = {
+	const helpers = {
 		getInputValue: useCallback(
-			(index: number) => values.get(index),
-			[values],
+			(index: number) => state.values.get(index),
+			[state.values],
 		),
 
 		getInputError: useCallback(
-			(index: number) => validationErrors.get(index),
-			[validationErrors],
+			(index: number) => state.validationErrors.get(index),
+			[state.validationErrors],
 		),
 
 		getDependentInputs: useCallback(
@@ -184,24 +141,25 @@ export const useCord = (sentence: string): UseCordReturn => {
 			[parsed],
 		),
 
-		isComplete: useMemo(() => {
-			if (!parsed) return false;
-			return parsed.inputs.every((input) => values.has(input.index));
-		}, [parsed, values]),
+		isComplete: useMemo(
+			() =>
+				parsed?.inputs.every((input) =>
+					state.values.has(input.index),
+				) ?? false,
+			[parsed, state.values],
+		),
 
-		isValid: useMemo(() => {
-			return validationErrors.size === 0;
-		}, [validationErrors]),
+		isValid: useMemo(
+			() => state.validationErrors.size === 0,
+			[state.validationErrors],
+		),
 	};
 
 	return {
 		state: {
-			values,
+			...state,
 			parsed,
 			resolvedSentence,
-			error,
-			isDirty,
-			validationErrors,
 		},
 		actions,
 		helpers,
