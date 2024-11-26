@@ -7,7 +7,7 @@ Cord is a templating language designed to create structured, type-safe input for
 For example, this Cord string:
 
 ```typescript
-"Send {0<amount:uint256>} {1<token:address>} to {2<recipient:address>}";
+Send {0<amount:uint256>} {1<token:address>} to {2<recipient:address>}"
 ```
 
 Automatically creates an interface that:
@@ -28,9 +28,11 @@ Cord's syntax is inspired by Python's f-strings (formatted string literals), whi
 name = "Alice"
 amount = 100
 f"Send {amount} tokens to {name}"
+```
 
-# Cord equivalent with types and validation
-"Send {0<amount:uint256>} tokens to {1<recipient:address>}"
+```typescript
+// Cord equivalent with types and validation
+"Send {0<amount:uint256>} tokens to {1<recipient:address>}";
 ```
 
 ## Validation Rules
