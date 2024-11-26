@@ -2,7 +2,12 @@ import { useState, useCallback, useMemo } from "react";
 import { parseCordSentence } from "../parse";
 import { setValue, resolveSentence } from "../values";
 import { createInitialState } from "../state";
-import { ParsedCordSentence, InputValues, InputReference, InputState } from "../lib";
+import {
+	ParsedCordSentence,
+	InputValues,
+	InputReference,
+	InputState,
+} from "../lib";
 
 export type ValidationError = {
 	type: "validation";
@@ -69,7 +74,6 @@ export const useCord = (sentence: string): UseCordReturn => {
 	const resolvedSentence = useMemo(() => {
 		if (!parsed) return null;
 
-		// Only try to resolve if we have all values (even if invalid)
 		const allInputsHaveValues = parsed.inputs.every((input) =>
 			values.has(input.index),
 		);

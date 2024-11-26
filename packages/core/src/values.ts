@@ -25,7 +25,6 @@ export const setValue = ({
 	let validationError: string | undefined;
 	const newValues = new Map(currentValues);
 
-	// Validate the new value
 	if (typeof input.type === "object" && "left" in input.type) {
 		const conditionMet = compareValues(
 			input.type.left,
@@ -47,7 +46,6 @@ export const setValue = ({
 		validationError = "Invalid value";
 	}
 
-	// If value hasn't changed, return current state
 	const currentValue = currentValues.get(index)?.value;
 	if (currentValue === value) {
 		return {
@@ -57,10 +55,8 @@ export const setValue = ({
 		};
 	}
 
-	// Set the new value
 	newValues.set(index, { value: value });
 
-	// Re-evaluate all conditional types
 	parsedSentence.inputs.forEach((input) => {
 		if (
 			input.type &&
@@ -89,7 +85,6 @@ export const setValue = ({
 		}
 	});
 
-	// Handle dependents
 	const hasDependents = parsedSentence.inputs.some(
 		(input) => input.dependentOn === index,
 	);
