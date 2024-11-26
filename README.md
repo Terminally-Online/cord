@@ -35,34 +35,15 @@ f"Send {amount} tokens to {name}"
 Send {0<amount:uint256>} tokens to {1<recipient:address>}
 ```
 
-## Validation Rules
-
-1. Input indices must be sequential starting from 0
-2. Default values must match their specified types
-3. Constant types enforce exact value matches
-4. Compound types validate each part independently
-5. Dependencies are cleared when parent values change
-6. Comparison types dynamically validate based on conditions
-
-## Error Handling
-
-The parser provides detailed error messages for:
-
--   Invalid type definitions
--   Incorrect default values
--   Malformed comparison expressions
--   Missing required values
--   Type validation failures
-
 ## Core Syntax
+
+### Input Placeholders
 
 Input placeholders are denoted by curly braces containing an index number, starting from `0`:
 
 ```typescript
 {0}, {1}, {2}, etc.
 ```
-
-## Usage Patterns
 
 ### Raw Substitution
 
@@ -160,3 +141,23 @@ Deposit {0<amount:uint256>} {1<token:address>} into {1=>2<vault:address>}.
 ```
 
 When the value of the parent input `(1)` changes, the dependent input `(2)` will be cleared.
+
+## Validation Rules
+
+1. Input indices must be sequential starting from 0
+2. Default values must match their specified types
+3. Constant types enforce exact value matches
+4. Compound types validate each part independently
+5. Dependencies are cleared when parent values change
+6. Comparison types dynamically validate based on conditions
+
+## Error Handling
+
+The parser provides detailed error messages for:
+
+-   Invalid type definitions
+-   Incorrect default values
+-   Malformed comparison expressions
+-   Missing required values
+-   Type validation failures
+
