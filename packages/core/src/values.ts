@@ -58,6 +58,13 @@ export const setValue = ({
 	newValues.set(index, { value: value });
 
 	parsedSentence.inputs.forEach((input) => {
+		const currentValue = newValues.get(input.index);
+		if (currentValue?.isDisabled) {
+			newValues.set(input.index, { value: currentValue.value });
+		}
+	});
+
+	parsedSentence.inputs.forEach((input) => {
 		if (
 			input.type &&
 			typeof input.type === "object" &&
@@ -74,6 +81,7 @@ export const setValue = ({
 				: input.type.falseType;
 
 			if (
+				conditionMet &&
 				typeof resolvedType === "object" &&
 				"constant" in resolvedType
 			) {
