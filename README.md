@@ -7,7 +7,7 @@ Cord is a templating language designed to create structured, type-safe input for
 For example, this Cord string:
 
 ```typescript
-Send {0<amount:uint256>} {1<token:address>} to {2<recipient:address>}"
+Send {0<amount:uint256>} {1<token:address>} to {2<recipient:address>}
 ```
 
 Automatically creates an interface that:
