@@ -95,7 +95,7 @@ describe("parseCordSentence with compound types and defaults", () => {
 		);
 	});
 
-	it("should handle compound value part references in conditionals", () => {
+	it("should handle compound value part references in comparisons", () => {
 		const result = parseCordSentence(
 			"Transfer {0<amount:[(1.1)>=20?1:uint256]>} {1<token:address:uint256>}",
 		);
@@ -169,6 +169,87 @@ describe("parseCordSentence with constant type validation", () => {
 		);
 	});
 
+	it("should parse compound type with constant as base type", () => {
+		const result = parseCordSentence("Transfer {0<token:1:address>}");
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		const input = result.value.inputs[0];
+		expect(input.type).toEqual({
+			baseType: { constant: "1" },
+			metadata: ["address"],
+		});
+	});
+
+	it("should parse compound type with constant in metadata", () => {
+		const result = parseCordSentence(
+			"Transfer {0<token:uint256:1:address>}",
+		);
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		const input = result.value.inputs[0];
+		expect(input.type).toEqual({
+			baseType: "uint256",
+			metadata: [{ constant: "1" }, "address"],
+		});
+	});
+
+	it("should validate compound values with constants", () => {
+		const sentence = parseCordSentence("Transfer {0<token:1:address>}");
+		expect(sentence.success).toBe(true);
+		if (!sentence.success) return;
+
+		const setValidResult = setValue({
+			parsedSentence: sentence.value,
+			currentValues: new Map(),
+			index: 0,
+			value: "1:0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+		});
+		expect(setValidResult.success).toBe(true);
+
+		// const setInvalidResult = setValue({
+		// 	parsedSentence: sentence.value,
+		// 	currentValues: new Map(),
+		// 	index: 0,
+		// 	value: "2:0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+		// });
+		// expect(setInvalidResult.success).toBe(false);
+	});
+
+	it("should handle compound type with multiple constants", () => {
+		const result = parseCordSentence("Transfer {0<token:1:2:3>}");
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		const input = result.value.inputs[0];
+		expect(input.type).toEqual({
+			baseType: { constant: "1" },
+			metadata: [{ constant: "2" }, { constant: "3" }],
+		});
+	});
+
+	it("should handle mixed constants and EVM types with defaults", () => {
+		const result = parseCordSentence(
+			"Transfer {0<token:1=1:address=0x742d35Cc6634C0532925a3b844Bc454e4438f44e:2=2>}",
+		);
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		const input = result.value.inputs[0];
+		expect(input.type).toEqual({
+			baseType: { constant: "1" },
+			metadata: ["address", { constant: "2" }],
+		});
+		expect(input.defaultValue).toBe(
+			"1:0x742d35Cc6634C0532925a3b844Bc454e4438f44e:2",
+		);
+	});
+
 	it("should disable inputs of constant type", () => {
 		const result = parseCordSentence("Deposit {0<amount:1>}");
 
@@ -178,7 +259,7 @@ describe("parseCordSentence with constant type validation", () => {
 		expect(result.value.values.get(0)?.isDisabled).toBe(true);
 	});
 
-	it("should disable inputs of constant type in conditional", () => {
+	it("should disable inputs of constant type in comparison", () => {
 		const result = parseCordSentence(
 			"Deposit {0<amount:[(1)==1?1:2]>} {1<token:uint256=1>}",
 		);
@@ -187,89 +268,6 @@ describe("parseCordSentence with constant type validation", () => {
 		if (!result.success) return;
 
 		expect(result.value.values.get(0)?.isDisabled).toBe(true);
-	});
-
-	describe("constant types in compound types", () => {
-		it("should parse compound type with constant as base type", () => {
-			const result = parseCordSentence("Transfer {0<token:1:address>}");
-
-			expect(result.success).toBe(true);
-			if (!result.success) return;
-
-			const input = result.value.inputs[0];
-			expect(input.type).toEqual({
-				baseType: { constant: "1" },
-				metadata: ["address"],
-			});
-		});
-
-		it("should parse compound type with constant in metadata", () => {
-			const result = parseCordSentence(
-				"Transfer {0<token:uint256:1:address>}",
-			);
-
-			expect(result.success).toBe(true);
-			if (!result.success) return;
-
-			const input = result.value.inputs[0];
-			expect(input.type).toEqual({
-				baseType: "uint256",
-				metadata: [{ constant: "1" }, "address"],
-			});
-		});
-
-		it("should validate compound values with constants", () => {
-			const sentence = parseCordSentence("Transfer {0<token:1:address>}");
-			expect(sentence.success).toBe(true);
-			if (!sentence.success) return;
-
-			const setValidResult = setValue({
-				parsedSentence: sentence.value,
-				currentValues: new Map(),
-				index: 0,
-				value: "1:0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-			});
-			expect(setValidResult.success).toBe(true);
-
-			// const setInvalidResult = setValue({
-			// 	parsedSentence: sentence.value,
-			// 	currentValues: new Map(),
-			// 	index: 0,
-			// 	value: "2:0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-			// });
-			// expect(setInvalidResult.success).toBe(false);
-		});
-
-		it("should handle compound type with multiple constants", () => {
-			const result = parseCordSentence("Transfer {0<token:1:2:3>}");
-
-			expect(result.success).toBe(true);
-			if (!result.success) return;
-
-			const input = result.value.inputs[0];
-			expect(input.type).toEqual({
-				baseType: { constant: "1" },
-				metadata: [{ constant: "2" }, { constant: "3" }],
-			});
-		});
-
-		it("should handle mixed constants and EVM types with defaults", () => {
-			const result = parseCordSentence(
-				"Transfer {0<token:1=1:address=0x742d35Cc6634C0532925a3b844Bc454e4438f44e:2=2>}",
-			);
-
-			expect(result.success).toBe(true);
-			if (!result.success) return;
-
-			const input = result.value.inputs[0];
-			expect(input.type).toEqual({
-				baseType: { constant: "1" },
-				metadata: ["address", { constant: "2" }],
-			});
-			expect(input.defaultValue).toBe(
-				"1:0x742d35Cc6634C0532925a3b844Bc454e4438f44e:2",
-			);
-		});
 	});
 });
 
@@ -329,7 +327,7 @@ describe("parseCordSentence with comparison based types", () => {
 		testCases.forEach(
 			({ desc, sentence, matchValue, nonMatchValue, expectedType }) => {
 				describe(desc, () => {
-					it(`should automatically set values when condition is met (${matchValue})`, () => {
+					it(`should automatically set values when comparison is met (${matchValue})`, () => {
 						const result = parseCordSentence(sentence);
 						expect(result.success).toBe(true);
 						if (!result.success) return;
@@ -342,7 +340,7 @@ describe("parseCordSentence with comparison based types", () => {
 						);
 					});
 
-					it(`should handle fallback type when condition is not met (${nonMatchValue})`, () => {
+					it(`should handle fallback type when comparison is not met (${nonMatchValue})`, () => {
 						const nonMatchSentence = sentence.replace(
 							`=${matchValue}>`,
 							`=${nonMatchValue}>`,
@@ -362,98 +360,92 @@ describe("parseCordSentence with comparison based types", () => {
 		);
 	});
 
-	describe("string comparisons", () => {
-		it("should handle string equality", () => {
-			const result = parseCordSentence(
-				"Transfer {0<amount:[(1)==ERC721?1:uint256]>} {1<type:string=ERC721>}",
-			);
-			expect(result.success).toBe(true);
-			if (!result.success) return;
+	it("should handle comparison with string equality", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)==ERC721?1:uint256]>} {1<type:string=ERC721>}",
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
 
-			expect(result.value.values.get(1)?.value).toBe("ERC721");
-			expect(result.value.values.get(0)?.value).toBe("1");
-		});
+		expect(result.value.values.get(1)?.value).toBe("ERC721");
+		expect(result.value.values.get(0)?.value).toBe("1");
 	});
 
-	describe("conditional type validation with operators", () => {
-		it("should handle basic numeric equality", () => {
-			const result = parseCordSentence(
-				"Transfer {0<amount:[(1)==100?1:uint256]>} {1<value:uint256=100>}",
-			);
-			expect(result.success).toBe(true);
-			if (!result.success) return;
+	it("should handle comparison with basic numeric equality", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)==100?1:uint256]>} {1<value:uint256=100>}",
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
 
-			expect(result.value.values.get(1)?.value).toBe("100");
-			expect(result.value.values.get(0)?.value).toBe("1");
-		});
-
-		it("should handle multiple reference comparisons", () => {
-			const result = parseCordSentence(
-				"Transfer {0<amount:[(1)==(2)?1:uint256]>} {1<value:uint256=100>} {2<value:uint256=100>}",
-			);
-			expect(result.success).toBe(true);
-			if (!result.success) return;
-			expect(result.value.values.get(1)?.value).toBe("100");
-			expect(result.value.values.get(2)?.value).toBe("100");
-			expect(result.value.values.get(0)?.value).toBe("1");
-		});
-
-		it("should handle unequal reference values", () => {
-			const result = parseCordSentence(
-				"Transfer {0<amount:[(1)==(2)?1:uint256]>} {1<value:uint256=100>} {2<value:uint256=200>}",
-			);
-			expect(result.success).toBe(true);
-			if (!result.success) return;
-			expect(result.value.values.get(1)?.value).toBe("100");
-			expect(result.value.values.get(2)?.value).toBe("200");
-			expect(result.value.values.has(0)).toBe(false);
-		});
-
-		it("should handle basic numeric equality in inverse order", () => {
-			const result = parseCordSentence(
-				"Transfer {0<amount:[100==(1)?1:uint256]>} {1<value:uint256=100>}",
-			);
-			expect(result.success).toBe(true);
-			if (!result.success) return;
-
-			expect(result.value.values.get(1)?.value).toBe("100");
-			expect(result.value.values.get(0)?.value).toBe("1");
-		});
-
-		it("should handle value-to-reference comparisons", () => {
-			const result = parseCordSentence(
-				"Transfer {0<amount:[100==(1)?1:uint256]>} {1<value:uint256=100>}",
-			);
-			expect(result.success).toBe(true);
-			if (!result.success) return;
-			expect(result.value.values.get(1)?.value).toBe("100");
-			expect(result.value.values.get(0)?.value).toBe("1");
-		});
-
-		it("should handle value-to-reference greater than", () => {
-			const result = parseCordSentence(
-				"Transfer {0<amount:[200>(1)?1:uint256]>} {1<value:uint256=100>}",
-			);
-			expect(result.success).toBe(true);
-			if (!result.success) return;
-			expect(result.value.values.get(1)?.value).toBe("100");
-			expect(result.value.values.get(0)?.value).toBe("1");
-		});
-
-		it("should handle value-to-reference less than", () => {
-			const result = parseCordSentence(
-				"Transfer {0<amount:[50<(1)?1:uint256]>} {1<value:uint256=100>}",
-			);
-			expect(result.success).toBe(true);
-			if (!result.success) return;
-			expect(result.value.values.get(1)?.value).toBe("100");
-			expect(result.value.values.get(0)?.value).toBe("1");
-		});
+		expect(result.value.values.get(1)?.value).toBe("100");
+		expect(result.value.values.get(0)?.value).toBe("1");
 	});
-});
 
-describe("parseCordSentence with nested conditionals", () => {
-	it("should correctly parse nested conditional type", () => {
+	it("should handle comparison with multiple references", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)==(2)?1:uint256]>} {1<value:uint256=100>} {2<value:uint256=100>}",
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.value.values.get(1)?.value).toBe("100");
+		expect(result.value.values.get(2)?.value).toBe("100");
+		expect(result.value.values.get(0)?.value).toBe("1");
+	});
+
+	it("should handle comparison with unequal reference values", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)==(2)?1:uint256]>} {1<value:uint256=100>} {2<value:uint256=200>}",
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.value.values.get(1)?.value).toBe("100");
+		expect(result.value.values.get(2)?.value).toBe("200");
+		expect(result.value.values.has(0)).toBe(false);
+	});
+
+	it("should handle comparison with basic numeric equality in inverse order", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[100==(1)?1:uint256]>} {1<value:uint256=100>}",
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		expect(result.value.values.get(1)?.value).toBe("100");
+		expect(result.value.values.get(0)?.value).toBe("1");
+	});
+
+	it("should handle comparison with value-to-reference comparisons", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[100==(1)?1:uint256]>} {1<value:uint256=100>}",
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.value.values.get(1)?.value).toBe("100");
+		expect(result.value.values.get(0)?.value).toBe("1");
+	});
+
+	it("should handle comparison with value-to-reference greater than", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[200>(1)?1:uint256]>} {1<value:uint256=100>}",
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.value.values.get(1)?.value).toBe("100");
+		expect(result.value.values.get(0)?.value).toBe("1");
+	});
+
+	it("should handle comparison with value-to-reference less than", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[50<(1)?1:uint256]>} {1<value:uint256=100>}",
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.value.values.get(1)?.value).toBe("100");
+		expect(result.value.values.get(0)?.value).toBe("1");
+	});
+
+	it("should correctly parse nested comparison type", () => {
 		const result = parseCordSentence(
 			"Transfer {0<amount:[(1)==200?1:[(2)==200?2:3]]>} {1<value:uint256=100>} {2<value:uint256=200>}",
 		);
@@ -476,7 +468,7 @@ describe("parseCordSentence with nested conditionals", () => {
 		});
 	});
 
-	it("should correctly parse nested conditional type inverse order", () => {
+	it("should correctly parse nested comparison type inverse order", () => {
 		const result = parseCordSentence(
 			"Transfer {0<amount:[(1)==200?[(2)==200?2:3]:1]>} {1<value:uint256=100>} {2<value:uint256=200>}",
 		);
@@ -519,7 +511,7 @@ describe("parseCordSentence with nested conditionals", () => {
 		expect(result.value.values.get(0)?.value).toBe("2");
 	});
 
-	it("should handle all conditions false", () => {
+	it("should handle all comparisons false", () => {
 		const result = parseCordSentence(
 			"Transfer {0<amount:[(1)==200?1:[(2)==300?2:3]]>} {1<value:uint256=100>} {2<value:uint256=200>}",
 		);
@@ -529,7 +521,7 @@ describe("parseCordSentence with nested conditionals", () => {
 		expect(result.value.values.get(0)?.value).toBe("3");
 	});
 
-	it("should handle deeply nested conditions", () => {
+	it("should handle deeply nested comparisons", () => {
 		const result = parseCordSentence(
 			"Transfer {0<amount:[(1)==100?1:[(2)==200?2:[(3)==300?4:5]]]>} {1<value:uint256=100>} {2<value:uint256=200>} {3<value:uint256=400>}",
 		);
@@ -538,4 +530,13 @@ describe("parseCordSentence with nested conditionals", () => {
 
 		expect(result.value.values.get(0)?.value).toBe("1");
 	});
+
+	it("should handle comparison with default values", () => { 
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)>=20?1:uint256]=1>} {1<tokenType:uint256>}",
+		);
+		
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+	})
 });
