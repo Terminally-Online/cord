@@ -1,14 +1,47 @@
 ![Cord image](./cord.png)
 
-Cord is a string based language for structured sentences that enables low-code transaction (intent) data input while maintaining precise control over input definitions, options, and associated values. It allows developers to define user-facing interfaces for data entry that map to specific intents.
+# Cord
 
-## Core Concepts
+Cord is a string-based language for structured sentences that enables low-code transaction (intent) data input while maintaining precise control over input definitions, options, and associated values. It allows developers to define user-facing interfaces for data entry that map to specific intents.
 
-### Input Placeholders
+## Inspiration
 
-Input placeholders are denoted by curly braces containing an index number, starting from 0:
+Cord's syntax is inspired by Python's f-strings (formatted string literals), which use curly braces for variable interpolation. However, Cord extends this concept with additional features for type safety, validation, and dependencies:
 
-```txt
+```python
+# Python f-string
+name = "Alice"
+amount = 100
+f"Send {amount} tokens to {name}"
+
+# Cord equivalent with types and validation
+"Send {0<amount:uint256>} tokens to {1<recipient:address>}"
+```
+
+## Validation Rules
+
+1. Input indices must be sequential starting from 0
+2. Default values must match their specified types
+3. Constant types enforce exact value matches
+4. Compound types validate each part independently
+5. Dependencies are cleared when parent values change
+6. Comparison types dynamically validate based on conditions
+
+## Error Handling
+
+The parser provides detailed error messages for:
+
+-   Invalid type definitions
+-   Incorrect default values
+-   Malformed comparison expressions
+-   Missing required values
+-   Type validation failures
+
+## Core Syntax
+
+Input placeholders are denoted by curly braces containing an index number, starting from `0`:
+
+```typescript
 {0}, {1}, {2}, etc.
 ```
 
@@ -18,23 +51,31 @@ Input placeholders are denoted by curly braces containing an index number, start
 
 For independent inputs that don't share data relationships, use simple indexed placeholders:
 
-```txt
+```typescript
 Deposit {0} {1} into {2}.
 ```
 
 ### Names
 
-When the inputs are returned an array with name mappings can be created for simple API relaying:
+Add semantic meaning to inputs by providing names:
 
-```txt
+```typescript
 Transfer {0<amount>} {1<token>} {2<id>} to {3<recipient>}.
 ```
 
-### Types (and runtime validation)
+### Default Values
 
-You can define a single-depth `EVM` type to enable native validation on named inputs. If not provided, inputs will not be validated.
+Specify default values by appending `={value}` after the type definition:
 
-```txt
+```typescript
+Deposit {0<amount:uint256=1>} {1<token:address=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:uint8=20>} into {1=>2<vault:address>}.
+```
+
+### Types and Validation
+
+You can define a single-depth EVM type to enable native validation on named inputs. If not provided, inputs will not be validated.
+
+```typescript
 Transfer {0<amount:uint256>} {1<token:address>} {2<id:uint256>} to {3<recipient:address>}.
 ```
 
@@ -50,56 +91,55 @@ Valid types include:
 
 ### Compound Types
 
-While single-depth types work in most cases there are situations where you will need to define a compound string as a type to enable more verbose backend decoding:
+For cases requiring multiple type validations, use compound types separated by colons:
 
-```txt
+```typescript
 Transfer {0<amount:uint256>} {1<token:address:uint8>} {2<id:uint256>} to {3<recipient:address>}.
 ```
 
-In this case, the value provided for `token` would be `0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:20` where we have defined a token address and it's standard.
+This allows validation of multiple parts of a single input. For example, validating both a token address and its decimals:
 
 ### Constant Value Types
 
-In specific cases you will want to make the type of an input strict to a value. Any type that is not a supported `EVM` type is classified as a constant value type:
+To restrict an input to a specific value, use a constant type:
 
-```txt
-Deposit {0<amount:1>} {1<token:address>} into {1=>2<vault:address>}.
+```typescript
+Deposit {0<amount:1>} {1<token:address>}
 ```
 
-### Default Values
+### Comparison Types
 
-In specific cases you will want default values. Simply append a `={value}` following the type definition.
+Enable dynamic type selection based on conditions using comparison types:
 
-```txt
-Deposit {0<amount:uint256=1>} {1<token:address=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:uint8=20>} into {1=>2<vault:address>}.
+```typescript
+// Basic comparison of two reference values.
+Transfer {0<amount:[(1)>=20?1:uint256]>} {1<tokenType:uint256>}
+// Reference compare two reference values (whether whole or parts) by wrapping an index in parentheses.
+Transfer {0<amount:[(1)==(2)?1:uint256]>} {1<value:uint256=100>} {2<amount:uint256=100>}
+// Index part references with (index.part) notation.
+Transfer {0<amount:[(1.1)==721?1:uint256]>} {1<token:address:uint256>}
+// Nested comparisons are supported for the more complex cases.
+Transfer {0<amount:[(1)==100?1:[(2)==200?2:[(3)==300?4:5]]]>}
+// Default values can be set for comparison types though the default must be an accepted type for all branches.
+// Comparison derived defaults are not supported at this time.
+Transfer {0<amount:[(1)==721?1:uint256]=1>} {1<tokenType:uint256>}
 ```
+
+Supported comparison operators:
+
+-   `==` Equal to
+-   `!=` Not equal to
+-   `>` Greater than
+-   `>=` Greater than or equal
+-   `<` Less than
+-   `<=` Less than or equal
 
 ### Dependencies
 
-There are situations where the value of one index is dependent on the value of another index. In this case, when the value of the parent index changes the child index should be cleared. To declare this you can define a dependent index with:
+Define dependencies between inputs using the `=>` operator:
 
-```txt
+```typescript
 Deposit {0<amount:uint256>} {1<token:address>} into {1=>2<vault:address>}.
 ```
 
-In this situation, if the value of `1` is changed after having set a value for `2`, the value of `2` will be cleared.
-
-### Ternary
-
-In specific cases you will want a type that is either a constant value type dynamic type specification based on the current value of that input/field.
-
-```txt
-Transfer {0<amount:[(1)>=20?1:uint256]>} {1<tokenType:uint256>}
-```
-
-In the above, we've compared a reference value `(1)` to a constant value of `20`. In specific cases though, you will want to compare two reference values which you can easily do like:
-
-```txt
-Transfer {0<amount:[(1)==(2)?1:uint256]>} {1<value:uint256=100>} {2<amount:uint256=100>}
-```
-
-Further, you have the ability to implement nested ternaries in the case that you have a set of controllers you need:
-
-```txt
-Transfer {0<amount:[(1)==100?1:[(2)==200?2:[(3)==300?4:5]]>} {1<value:uint256=100>} {2<value:uint256=200>} {3<value:uint256=400>}
-```
+When the value of the parent input `(1)` changes, the dependent input `(2)` will be cleared.
