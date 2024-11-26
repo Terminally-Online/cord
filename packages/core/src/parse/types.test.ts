@@ -531,12 +531,23 @@ describe("parseCordSentence with comparison based types", () => {
 		expect(result.value.values.get(0)?.value).toBe("1");
 	});
 
-	it("should handle comparison with default values", () => { 
+	it("should handle comparison with default values", () => {
 		const result = parseCordSentence(
 			"Transfer {0<amount:[(1)>=20?1:uint256]=1>} {1<tokenType:uint256>}",
 		);
-		
+
 		expect(result.success).toBe(true);
 		if (!result.success) return;
-	})
+
+		const input = result.value.inputs[0];
+		expect(input.defaultValue).toBe("1");
+	});
+
+	it("should handle comparison with invalid typed default values", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:[(1)>=20?1:uint256]=abc>} {1<tokenType:uint256>}",
+		);
+
+		expect(result.success).toBe(false);
+	});
 });

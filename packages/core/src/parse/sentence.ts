@@ -17,7 +17,6 @@ export const parseCordSentence = (
 		const inputs: InputReference[] = [];
 		const values = new Map<number, InputState>();
 
-		// First pass: collect inputs and set defaults
 		const template = sentence.replace(
 			PLACEHOLDER_PATTERN,
 			(_, dependentOn, index, name, typeString, delimiter) => {
@@ -91,7 +90,6 @@ export const parseCordSentence = (
 			return type;
 		};
 
-		// Second pass: resolve conditionals
 		inputs.forEach((input) => {
 			if (
 				input.type &&
