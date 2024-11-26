@@ -2,7 +2,22 @@
 
 # Cord
 
-Cord is a string-based language for structured sentences that enables low-code transaction (intent) data input while maintaining precise control over input definitions, options, and associated values. It allows developers to define user-facing interfaces for data entry that map to specific intents.
+Cord is a templating language designed to create structured, type-safe input forms from simple strings. It helps developers build user interfaces for blockchain transactions by combining human-readable sentences with powerful validation rules.
+
+For example, this Cord string:
+
+```typescript
+"Send {0<amount:uint256>} {1<token:address>} to {2<recipient:address>}";
+```
+
+Automatically creates an interface that:
+
+-   Validates the amount is a valid uint256 number
+-   Ensures the token is a valid Ethereum address
+-   Verifies the recipient is a valid Ethereum address
+-   Maintains the natural sentence structure for users
+
+Cord bridges the gap between human-readable instructions and blockchain-ready data, making it easier to build reliable DApp interfaces without complex forms or even form validation code.
 
 ## Inspiration
 
