@@ -1,5 +1,11 @@
 # @terminallyonline/cord
 
+## 0.0.4
+
+### Patch Changes
+
+- 89bf34c: fix: publish action with inline build
+
 ## 0.0.3
 
 ### Patch Changes
