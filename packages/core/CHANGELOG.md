@@ -1,5 +1,11 @@
 # @terminallyonline/cord
 
+## 0.0.5
+
+### Patch Changes
+
+- 236e527: fix: release visibility
+
 ## 0.0.4
 
 ### Patch Changes
