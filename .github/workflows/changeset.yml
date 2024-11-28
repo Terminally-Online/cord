@@ -2,7 +2,7 @@ name: "📝 PR Changeset"
 
 on:
     pull_request:
-        types: [closed]
+        types: [opened, synchronize]
         branches:
             - main
 
@@ -12,14 +12,15 @@ permissions:
 
 jobs:
     create-changeset:
-        if: github.event.pull_request.merged == true
         name: 📝 Create Changeset
         runs-on: ubuntu-latest
         steps:
             - name: 🛒 Checkout
               uses: actions/checkout@v4
               with:
+                  ref: ${{ github.head_ref }}
                   fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: ⚙️ Setup Action
               uses: pnpm/action-setup@v4
@@ -35,25 +36,24 @@ jobs:
             - name: 📦 Install dependencies
               run: pnpm install
 
-            - name: 🔍 Check for existing changesets
-              id: check-changeset
-              run: |
-                  if [ -f ".changeset/pr-${{ github.event.pull_request.number }}.md" ]; then
-                    echo "exists=true" >> $GITHUB_OUTPUT
-                  else
-                    echo "exists=false" >> $GITHUB_OUTPUT
-                  fi
-
-            - name: 🔖 Create Changeset
+            - name: 🔖 Create or Update Changeset
               run: |
                   echo "---
                   '@terminallyonline/cord': patch
                   ---
 
-                  ${{ github.event.pull_request.title }}" > .changeset/pr-${{ github.event.pull_request.number }}.md
+                  ${{ github.event.pull_request.title }}
 
-            - name: 🚀 Commit Changeset
-              uses: stefanzweifel/git-auto-commit-action@v5
-              with:
-                  commit_message: "chore: add changeset for PR #${{ github.event.pull_request.number }}"
-                  file_pattern: ".changeset/*.md"
+                  Commits in this PR:
+                  $(git log --format='- %s' origin/main..HEAD)" > .changeset/pr-${{ github.event.pull_request.number }}.md
+
+            - name: 🔀 Configure Git
+              run: |
+                  git config --global user.name 'github-actions[bot]'
+                  git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+            - name: 🚀 Commit and Push Changeset
+              run: |
+                  git add .changeset/pr-${{ github.event.pull_request.number }}.md
+                  git commit -m "chore: update changeset for PR #${{ github.event.pull_request.number }}"
+                  git push origin ${{ github.head_ref }}
