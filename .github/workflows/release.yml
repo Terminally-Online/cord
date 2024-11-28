@@ -29,6 +29,9 @@ jobs:
             - name: 📦 Install dependencies
               run: pnpm install
 
+            - name: 🔨 Build Package
+              run: pnpm build
+
             - name: 🚀 Create Release Pull Request or Publish
               id: changesets
               uses: changesets/action@v1
