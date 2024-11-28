@@ -1,5 +1,11 @@
 # @terminallyonline/cord
 
+## 0.0.2
+
+### Patch Changes
+
+- 4e99263: feat: confirm functional release pipeline
+
 ## 0.0.1
 
 ### Patch Changes
