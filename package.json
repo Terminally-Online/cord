@@ -1,6 +1,5 @@
 {
 	"name": "cord",
-	"private": true,
 	"scripts": {
 		"dev": "pnpm --filter playground dev",
 		"build": "pnpm --filter core build && pnpm --filter playground build",
