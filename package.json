@@ -2,7 +2,7 @@
 	"name": "cord",
 	"scripts": {
 		"dev": "pnpm --filter @terminallyonline/cord-playground dev",
-		"build": "pnpm --filter @terminallyonline/cord build && pnpm --filter @terminallyonline/cord-playground build",
+		"build": "pnpm --filter @terminallyonline/cord build",
 		"test": "pnpm --filter @terminallyonline/cord test",
 		"test:watch": "pnpm --filter @terminallyonline/cord test:watch",
 		"test:coverage": "pnpm --filter @terminallyonline/cord test:coverage"
