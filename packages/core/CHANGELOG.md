@@ -1,5 +1,11 @@
 # @terminallyonline/cord
 
+## 0.0.9
+
+### Patch Changes
+
+- 3661766: fix: build action
+
 ## 0.0.8
 
 ### Patch Changes
