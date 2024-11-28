@@ -6,6 +6,10 @@ on:
         branches:
             - main
 
+permissions:
+    contents: write
+    pull-requests: write
+
 jobs:
     create-changeset:
         if: github.event.pull_request.merged == true
@@ -30,6 +34,15 @@ jobs:
 
             - name: 📦 Install dependencies
               run: pnpm install
+
+            - name: 🔍 Check for existing changesets
+              id: check-changeset
+              run: |
+                  if [ -f ".changeset/pr-${{ github.event.pull_request.number }}.md" ]; then
+                    echo "exists=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "exists=false" >> $GITHUB_OUTPUT
+                  fi
 
             - name: 🔖 Create Changeset
               run: |
