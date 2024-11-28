@@ -1,14 +1,15 @@
 {
-    "name": "cord",
-    "private": true,
-    "scripts": {
-        "dev": "pnpm --filter playground dev",
-        "build": "pnpm --filter core build && pnpm --filter playground build",
-        "test": "pnpm --filter core test",
-        "test:watch": "pnpm --filter core test:watch",
-        "test:coverage": "pnpm --filter core test:coverage"
-    },
-    "devDependencies": {
-        "typescript": "^5.3.3"
-    }
+	"name": "cord",
+	"private": true,
+	"scripts": {
+		"dev": "pnpm --filter playground dev",
+		"build": "pnpm --filter core build && pnpm --filter playground build",
+		"test": "pnpm --filter core test",
+		"test:watch": "pnpm --filter core test:watch",
+		"test:coverage": "pnpm --filter core test:coverage"
+	},
+	"devDependencies": {
+		"@changesets/cli": "^2.27.10",
+		"typescript": "^5.3.3"
+	}
 }
