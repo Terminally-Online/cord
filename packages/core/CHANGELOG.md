@@ -1,5 +1,11 @@
 # @terminallyonline/cord
 
+## 0.0.6
+
+### Patch Changes
+
+- c9ad421: fix: build steps
+
 ## 0.0.5
 
 ### Patch Changes
