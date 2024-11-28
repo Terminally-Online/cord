@@ -25,16 +25,35 @@ export const setValue = ({
 	let validationError: string | undefined;
 	const newValues = new Map(currentValues);
 
+	// Handle direct null type
+	if (input.type === "null") {
+		newValues.delete(index);
+		return {
+			success: true,
+			value: newValues,
+		};
+	}
+
+	// Handle conditional types
 	if (typeof input.type === "object" && "left" in input.type) {
 		const conditionMet = compareValues(
 			input.type.left,
 			input.type.operator,
 			input.type.right,
-			newValues,
+			newValues
 		);
 		const activeType = conditionMet
 			? input.type.trueType
 			: input.type.falseType;
+
+		if (activeType === "null") {
+			newValues.delete(index);
+			return {
+				success: true,
+				value: newValues,
+			};
+		}
+
 		if (!validateEvmValue(value, activeType)) {
 			validationError = "Invalid value for conditional type";
 		}
@@ -57,35 +76,32 @@ export const setValue = ({
 
 	newValues.set(index, { value: value });
 
-	parsedSentence.inputs.forEach((input) => {
-		const currentValue = newValues.get(input.index);
-		if (currentValue?.isDisabled) {
-			newValues.set(input.index, { value: currentValue.value });
-		}
-	});
+	// Process other inputs for conditional types and null types
+	parsedSentence.inputs.forEach((otherInput) => {
+		if (otherInput.index === index) return;
 
-	parsedSentence.inputs.forEach((input) => {
 		if (
-			input.type &&
-			typeof input.type === "object" &&
-			"left" in input.type
+			otherInput.type &&
+			typeof otherInput.type === "object" &&
+			"left" in otherInput.type
 		) {
 			const conditionMet = compareValues(
-				input.type.left,
-				input.type.operator,
-				input.type.right,
-				newValues,
+				otherInput.type.left,
+				otherInput.type.operator,
+				otherInput.type.right,
+				newValues
 			);
 			const resolvedType = conditionMet
-				? input.type.trueType
-				: input.type.falseType;
+				? otherInput.type.trueType
+				: otherInput.type.falseType;
 
-			if (
-				conditionMet &&
+			if (resolvedType === "null") {
+				newValues.delete(otherInput.index);
+			} else if (
 				typeof resolvedType === "object" &&
 				"constant" in resolvedType
 			) {
-				newValues.set(input.index, {
+				newValues.set(otherInput.index, {
 					value: resolvedType.constant,
 					isDisabled: true,
 				});
@@ -93,8 +109,9 @@ export const setValue = ({
 		}
 	});
 
+	// Handle dependencies
 	const hasDependents = parsedSentence.inputs.some(
-		(input) => input.dependentOn === index,
+		(input) => input.dependentOn === index
 	);
 	if (hasDependents) {
 		parsedSentence.inputs.forEach((input) => {
@@ -113,7 +130,7 @@ export const setValue = ({
 
 export const resolveSentence = (
 	parsedSentence: ParsedCordSentence,
-	values?: InputValues,
+	values?: InputValues
 ): Result<string> => {
 	try {
 		const resolveValues = values || parsedSentence.values;
@@ -132,7 +149,7 @@ export const resolveSentence = (
 					return value.value;
 				}
 				throw new Error(`Invalid value format for input ${index}`);
-			},
+			}
 		);
 		return { success: true, value: resolved };
 	} catch (error) {

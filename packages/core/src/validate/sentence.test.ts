@@ -49,17 +49,17 @@ describe("isComplete", () => {
 
 	it("should return true when all inputs have values", () => {
 		const values: InputValues = new Map([
-			[0, "value0"],
-			[1, "value1"],
-			[2, "value2"],
+			[0, { value: "value0" }],
+			[1, { value: "value1" }],
+			[2, { value: "value2" }],
 		]);
 		expect(isComplete(mockParsedSentence, values)).toBe(true);
 	});
 
 	it("should return false when some inputs are missing values", () => {
 		const values: InputValues = new Map([
-			[0, "value0"],
-			[2, "value2"],
+			[0, { value: "value0" }],
+			[2, { value: "value2" }],
 		]);
 		expect(isComplete(mockParsedSentence, values)).toBe(false);
 	});
@@ -82,10 +82,10 @@ describe("isComplete", () => {
 
 	it("should ignore extra values not in inputs", () => {
 		const values: InputValues = new Map([
-			[0, "value0"],
-			[1, "value1"],
-			[2, "value2"],
-			[3, "extra"],
+			[0, { value: "value0" }],
+			[1, { value: "value1" }],
+			[2, { value: "value2" }],
+			[3, { value: "extra" }],
 		]);
 		expect(isComplete(mockParsedSentence, values)).toBe(true);
 	});

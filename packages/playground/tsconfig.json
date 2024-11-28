@@ -1,32 +1,20 @@
 {
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "lib": [
-            "DOM",
-            "DOM.Iterable",
-            "ESNext"
-        ],
-        "jsx": "react-jsx",
-        "noEmit": true,
-        "baseUrl": ".",
-        "paths": {
-            "@/*": [
-                "src/*"
-            ],
-            "@cord/core": [
-                "../core/src"
-            ],
-            "@cord/core/react": [
-                "../core/src/react"
-            ]
-        }
-    },
-    "include": [
-        "src"
-    ],
-    "references": [
-        {
-            "path": "../core"
-        }
-    ]
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"lib": ["DOM", "DOM.Iterable", "ESNext"],
+		"jsx": "react-jsx",
+		"noEmit": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"],
+			"@terminallyonline/cord": ["../core/src"],
+			"@terminallyonline/cord/react": ["../core/src/react"]
+		}
+	},
+	"include": ["src"],
+	"references": [
+		{
+			"path": "../core"
+		}
+	]
 }

@@ -1,9 +1,10 @@
-import { useCord } from "@cord/core/react";
+import { useCord } from "@terminallyonline/cord/react";
 import { ExampleForm } from "@/components/ExampleForm";
 import { ParsedView } from "@/components/ParsedView";
 import { useState } from "react";
 
-const SENTENCE = "Transfer {0<amount:[(1)>=20?1:uint256]>} {1<tokenType:uint256>}";
+const SENTENCE =
+	"Transfer {0<amount:[(1.1)===721?1:uint256]>} {1<token:address=0x62180042606624f02d8a130da8a3171e9b33894d:uint256=721>} {2<id:[(1.1)>20?uint256:null]>}";
 
 export const App = () => {
 	const [sentence, setSentence] = useState(SENTENCE);
@@ -24,7 +25,7 @@ export const App = () => {
 							className="w-full py-4 border-[1px] border-black/10 px-2"
 							type="text"
 							value={sentence}
-							onChange={e => setSentence(e.target?.value)}
+							onChange={(e) => setSentence(e.target?.value)}
 							placeholder="Sentence"
 						/>
 						<ExampleForm
@@ -35,9 +36,11 @@ export const App = () => {
 						/>
 					</div>
 					<div className="w-1/2">
-						{error && error.type !== 'validation' && (
+						{error && error.type !== "validation" && (
 							<>
-								<h2 className="text-lg font-semibold mb-2">Error</h2>
+								<h2 className="text-lg font-semibold mb-2">
+									Error
+								</h2>
 								<div className="bg-red-50 text-red-700 p-4 rounded-md mb-4">
 									{error.message}
 								</div>
