@@ -1,0 +1,46 @@
+name: "📝 PR Changeset"
+
+on:
+    pull_request:
+        types: [closed]
+        branches:
+            - main
+
+jobs:
+    create-changeset:
+        if: github.event.pull_request.merged == true
+        name: 📝 Create Changeset
+        runs-on: ubuntu-latest
+        steps:
+            - name: 🛒 Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: ⚙️ Setup Action
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 8
+
+            - name: 📚 Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 18
+                  cache: "pnpm"
+
+            - name: 📦 Install dependencies
+              run: pnpm install
+
+            - name: 🔖 Create Changeset
+              run: |
+                  echo "---
+                  '@terminallyonline/cord': patch
+                  ---
+
+                  ${{ github.event.pull_request.title }}" > .changeset/pr-${{ github.event.pull_request.number }}.md
+
+            - name: 🚀 Commit Changeset
+              uses: stefanzweifel/git-auto-commit-action@v5
+              with:
+                  commit_message: "chore: add changeset for PR #${{ github.event.pull_request.number }}"
+                  file_pattern: ".changeset/*.md"
