@@ -38,14 +38,31 @@ jobs:
 
             - name: 🔖 Create or Update Changeset
               run: |
+                  PR_URL="https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+                  BRANCH_NAME="${{ github.head_ref }}"
+
                   echo "---
                   '@terminallyonline/cord': patch
                   ---
 
+                  ## 🔄 PR Details
                   ${{ github.event.pull_request.title }}
 
-                  Commits in this PR:
-                  $(git log --format='- %s' origin/main..HEAD)" > .changeset/pr-${{ github.event.pull_request.number }}.md
+                  > ${{ github.event.pull_request.body || 'No description provided.' }}
+
+                  ## 📝 Changes
+                  $(git log --format='- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))' origin/main..HEAD)
+
+                  ## 🔍 Additional Context
+                  - PR: [#${{ github.event.pull_request.number }}]($PR_URL)
+                  - Branch: \`$BRANCH_NAME\`
+                  - Author: @${{ github.event.pull_request.user.login }}
+                  - Files Changed: $(git diff --name-only origin/main..HEAD | wc -l)
+
+                  ## 📊 Stats
+                  \`\`\`diff
+                  $(git diff --shortstat origin/main..HEAD)
+                  \`\`\`" > .changeset/pr-${{ github.event.pull_request.number }}.md
 
             - name: 🔀 Configure Git
               run: |
