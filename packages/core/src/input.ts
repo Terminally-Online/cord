@@ -35,3 +35,54 @@ export const shouldRenderInput = (
 	}
 	return true;
 };
+
+export const getTypeDescription = (type: InputType | undefined): string => {
+	if (!type) return "";
+
+	if (typeof type === "string") {
+		return `Type: ${type}`;
+	}
+
+	if ("constant" in type) {
+		return `Must be: "${type.constant}"`;
+	}
+
+	if ("baseType" in type) {
+		return `Type: ${type.baseType} with ${type.metadata.join(", ")}`;
+	}
+
+	if ("left" in type) {
+		return "Conditional type";
+	}
+
+	return "";
+};
+
+export const getInputPlaceholder = (type: InputType | undefined): string => {
+	if (!type) return "";
+
+	if (typeof type === "string") {
+		switch (type) {
+			case "uint256":
+				return "Enter a positive number";
+			case "address":
+				return "0x...";
+			case "bool":
+				return "true or false";
+			case "string":
+				return "Enter text";
+			default:
+				return `Enter ${type}`;
+		}
+	}
+
+	if ("constant" in type) {
+		return `Must be: ${type.constant}`;
+	}
+
+	if ("baseType" in type) {
+		return `Enter ${type.baseType} value`;
+	}
+
+	return "Enter value";
+};
