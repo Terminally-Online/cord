@@ -3,8 +3,20 @@
 	"version": "0.0.11",
 	"description": "A templating language for creating structured, type-safe input forms",
 	"license": "MIT",
+	"homepage": "https://github.com/Terminally-Online/cord#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Terminally-Online/cord.git"
+	},
+	"bugs": {
+		"url": "https://github.com/Terminally-Online/cord/issues"
+	},
+	"type": "module",
+	"engines": {
+		"node": ">=18"
+	},
 	"scripts": {
-		"build": "tsc",
+		"build": "rm -rf dist && tsc && tsc --project tsconfig.esm.json",
 		"dev": "tsc --watch",
 		"test": "vitest run",
 		"test:watch": "vitest",
@@ -30,15 +42,27 @@
 		".": {
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js",
-			"require": "./dist/index.js"
+			"require": "./dist/index.js",
+			"default": "./dist/index.js"
 		},
 		"./react": {
 			"types": "./dist/react/index.d.ts",
 			"import": "./dist/react/index.js",
-			"require": "./dist/react/index.js"
+			"require": "./dist/react/index.js",
+			"default": "./dist/react/index.js"
 		}
 	},
+	"sideEffects": false,
 	"publishConfig": {
 		"access": "public"
-	}
+	},
+	"keywords": [
+		"templating",
+		"forms",
+		"validation",
+		"ethereum",
+		"blockchain",
+		"typescript",
+		"react"
+	]
 }

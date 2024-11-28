@@ -1,7 +1,13 @@
 {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
+		"moduleResolution": "bundler",
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
 		"outDir": "./dist",
+		"rootDir": "./src",
 		"declaration": true,
 		"declarationMap": true,
 		"sourceMap": true,
@@ -10,7 +16,9 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["src/*"]
-		}
+		},
+		"removeComments": true,
+		"stripInternal": true
 	},
 	"include": ["src"]
 }
