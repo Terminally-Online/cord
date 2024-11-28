@@ -1,5 +1,11 @@
 # @terminallyonline/cord
 
+## 0.0.7
+
+### Patch Changes
+
+- da7e6a2: fix: remove playground from build
+
 ## 0.0.6
 
 ### Patch Changes
