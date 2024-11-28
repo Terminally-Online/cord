@@ -1,6 +1,6 @@
 {
 	"name": "@terminallyonline/cord",
-	"version": "0.0.8",
+	"version": "0.0.9",
 	"description": "A templating language for creating structured, type-safe input forms",
 	"license": "MIT",
 	"scripts": {
