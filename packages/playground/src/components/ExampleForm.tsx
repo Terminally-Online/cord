@@ -2,7 +2,9 @@ import {
 	compareValues,
 	InputState,
 	InputType,
+	isConstantType,
 	ParsedCordSentence,
+	shouldRenderInput,
 	ValidationError,
 } from "@terminallyonline/cord";
 
@@ -13,16 +15,6 @@ type ExampleFormProps = {
 	getInputError: (index: number) => ValidationError | undefined;
 };
 
-const isConstantType = (
-	type: InputType | undefined
-): { isConstant: boolean; value?: string } => {
-	if (!type) return { isConstant: false };
-	if (typeof type === "object" && "constant" in type) {
-		return { isConstant: true, value: type.constant };
-	}
-	return { isConstant: false };
-};
-
 export const ExampleForm = ({
 	parsed,
 	setValue,
@@ -31,37 +23,17 @@ export const ExampleForm = ({
 }: ExampleFormProps) => {
 	if (!parsed) return null;
 
-	const shouldRenderInput = (
-		index: number,
-		type: InputType | undefined
-	): boolean => {
-		if (!type) return true;
-		if (type === "null") return false;
-		if (typeof type === "object" && "left" in type) {
-			const conditionMet = compareValues(
-				type.left,
-				type.operator,
-				type.right,
-				new Map(
-					parsed.inputs.map((i) => {
-						const value = getInputValue(i.index);
-						return [i.index, { value: value?.value || "" }];
-					})
-				)
-			);
-			const resolvedType = conditionMet ? type.trueType : type.falseType;
-			return resolvedType !== "null";
-		}
-		return true;
-	};
-
 	return (
 		<div className="bg-white rounded-lg shadow-sm my-6">
 			<h2 className="text-lg font-semibold mb-2">Input Values</h2>
 			<div className="space-y-4">
 				{parsed.inputs
 					.filter((input) =>
-						shouldRenderInput(input.index, input.type)
+						shouldRenderInput(
+							input.type,
+							parsed.inputs,
+							getInputValue
+						)
 					)
 					.map((input) => {
 						const value = getInputValue(input.index);
