@@ -3,6 +3,7 @@ import { parseCordSentence } from "../parse";
 import { setValue, resolveSentence } from "../values";
 import { createInitialState } from "../state";
 import { CordState, UseCordReturn } from "../lib";
+import { shouldRenderInput } from "../input";
 
 const initialState: CordState = {
 	values: createInitialState(),
@@ -30,11 +31,28 @@ export const useCord = (sentence: string): UseCordReturn => {
 		return result.value;
 	}, [sentence]);
 
+	const filteredInputs = useMemo(() => {
+		if (!parsed) return [];
+		return parsed.inputs.filter((input) =>
+			shouldRenderInput(input.type, parsed.inputs, (index) =>
+				state.values.get(index)
+			)
+		);
+	}, [parsed, state.values]);
+
+	const parsedWithFilteredInputs = useMemo(() => {
+		if (!parsed) return null;
+		return {
+			...parsed,
+			inputs: filteredInputs,
+		};
+	}, [parsed, filteredInputs]);
+
 	const resolvedSentence = useMemo(() => {
 		if (!parsed) return null;
 
 		const allInputsHaveValues = parsed.inputs.every((input) =>
-			state.values.has(input.index),
+			state.values.has(input.index)
 		);
 		if (!allInputsHaveValues) return null;
 
@@ -69,15 +87,15 @@ export const useCord = (sentence: string): UseCordReturn => {
 						? new Map(prev.validationErrors).set(index, {
 								type: "validation",
 								message: result.error,
-							})
+						  })
 						: new Map(
 								[...prev.validationErrors].filter(
-									([k]) => k !== index,
-								),
-							),
+									([k]) => k !== index
+								)
+						  ),
 				}));
 			},
-			[parsed, state.values],
+			[parsed, state.values]
 		),
 
 		reset: useCallback(() => {
@@ -93,7 +111,7 @@ export const useCord = (sentence: string): UseCordReturn => {
 					...prev,
 					values: newValues,
 					validationErrors: new Map(
-						[...prev.validationErrors].filter(([k]) => k !== index),
+						[...prev.validationErrors].filter(([k]) => k !== index)
 					),
 					isDirty: true,
 				};
@@ -113,52 +131,52 @@ export const useCord = (sentence: string): UseCordReturn => {
 	const helpers = {
 		getInputValue: useCallback(
 			(index: number) => state.values.get(index),
-			[state.values],
+			[state.values]
 		),
 
 		getInputError: useCallback(
 			(index: number) => state.validationErrors.get(index),
-			[state.validationErrors],
+			[state.validationErrors]
 		),
 
 		getDependentInputs: useCallback(
 			(index: number) => {
 				if (!parsed) return [];
 				return parsed.inputs.filter(
-					(input) => input.dependentOn === index,
+					(input) => input.dependentOn === index
 				);
 			},
-			[parsed],
+			[parsed]
 		),
 
 		hasDependency: useCallback(
 			(index: number) => {
 				if (!parsed) return false;
 				return parsed.inputs.some(
-					(input) => input.dependentOn === index,
+					(input) => input.dependentOn === index
 				);
 			},
-			[parsed],
+			[parsed]
 		),
 
 		isComplete: useMemo(
 			() =>
 				parsed?.inputs.every((input) =>
-					state.values.has(input.index),
+					state.values.has(input.index)
 				) ?? false,
-			[parsed, state.values],
+			[parsed, state.values]
 		),
 
 		isValid: useMemo(
 			() => state.validationErrors.size === 0,
-			[state.validationErrors],
+			[state.validationErrors]
 		),
 	};
 
 	return {
 		state: {
 			...state,
-			parsed,
+			parsed: parsedWithFilteredInputs,
 			resolvedSentence,
 		},
 		actions,
