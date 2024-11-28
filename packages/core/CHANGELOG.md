@@ -1,5 +1,34 @@
 # @terminallyonline/cord
 
+## 0.1.0
+
+### Minor Changes
+
+- 9b83da3: ## 🔄 PR Details
+  fix: package export
+
+  > No description provided.
+
+  ## 📝 Changes
+
+  - Merge branch 'fix-package' of https://github.com/Terminally-Online/cord into fix-package ([9eecd2d](https://github.com/Terminally-Online/cord/commit/9eecd2de8de57f95b69aea450da27abe4b18feb5))
+  - feat: ems and cjs exports ([efd93d4](https://github.com/Terminally-Online/cord/commit/efd93d4feb9053bef8593ccd9d0da48ca00e84ba))
+  - chore: update changeset for PR #34 ([5738942](https://github.com/Terminally-Online/cord/commit/5738942588fedcad85a5b77e0979e4ec975e763e))
+  - fix: package export ([27b6c72](https://github.com/Terminally-Online/cord/commit/27b6c72daef48c9165d5453b1ea01343d67125be))
+
+  ## 🔍 Additional Context
+
+  - PR: [#34](https://github.com/Terminally-Online/cord/pull/34)
+  - Branch: `fix-package`
+  - Author: @nftchance
+  - Files Changed: 6
+
+  ## 📊 Stats
+
+  ```diff
+   6 files changed, 84 insertions(+), 16 deletions(-)
+  ```
+
 ## 0.0.11
 
 ### Patch Changes
