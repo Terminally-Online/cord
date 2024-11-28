@@ -36,13 +36,35 @@ jobs:
             - name: 📦 Install dependencies
               run: pnpm install
 
+            - name: 🏷️ Determine Change Type
+              id: change-type
+              run: |
+                  # Check for PR labels first
+                  if [[ "${{ contains(github.event.pull_request.labels.*.name, 'major') }}" == "true" ]]; then
+                    echo "type=major" >> $GITHUB_OUTPUT
+                  elif [[ "${{ contains(github.event.pull_request.labels.*.name, 'minor') }}" == "true" ]]; then
+                    echo "type=minor" >> $GITHUB_OUTPUT
+                  elif [[ "${{ contains(github.event.pull_request.labels.*.name, 'patch') }}" == "true" ]]; then
+                    echo "type=patch" >> $GITHUB_OUTPUT
+                  else
+                    # Fall back to commit message analysis
+                    COMMITS=$(git log --format=%s origin/main..HEAD)
+                    if echo "$COMMITS" | grep -q "^BREAKING CHANGE\|^[[:alpha:]]\+!:"; then
+                      echo "type=major" >> $GITHUB_OUTPUT
+                    elif echo "$COMMITS" | grep -q "^feat\|^feature:"; then
+                      echo "type=minor" >> $GITHUB_OUTPUT
+                    else
+                      echo "type=patch" >> $GITHUB_OUTPUT
+                    fi
+                  fi
+
             - name: 🔖 Create or Update Changeset
               run: |
                   PR_URL="https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
                   BRANCH_NAME="${{ github.head_ref }}"
 
                   echo "---
-                  '@terminallyonline/cord': patch
+                  '@terminallyonline/cord': ${{ steps.change-type.outputs.type }}
                   ---
 
                   ## 🔄 PR Details
