@@ -86,6 +86,7 @@ Valid types include:
 -   `address`
 -   `bool`
 -   `string`
+-   `null`
 
 ### Compound Types
 
@@ -160,4 +161,3 @@ The parser provides detailed error messages for:
 -   Malformed comparison expressions
 -   Missing required values
 -   Type validation failures
-
