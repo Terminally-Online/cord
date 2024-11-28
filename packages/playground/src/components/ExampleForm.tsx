@@ -1,5 +1,4 @@
 import {
-	compareValues,
 	getInputPlaceholder,
 	getTypeDescription,
 	InputState,
