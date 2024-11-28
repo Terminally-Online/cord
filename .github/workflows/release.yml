@@ -29,14 +29,11 @@ jobs:
             - name: 📦 Install dependencies
               run: pnpm install
 
-            - name: 🔨 Build Package
-              run: pnpm build
-
             - name: 🚀 Create Release Pull Request or Publish
               id: changesets
               uses: changesets/action@v1
               with:
-                  publish: pnpm changeset publish
+                  publish: pnpm build && pnpm changeset publish
                   commit: "chore: version packages"
                   title: "chore: version packages"
               env:
