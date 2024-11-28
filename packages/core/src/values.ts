@@ -105,6 +105,14 @@ export const setValue = ({
 					value: resolvedType.constant,
 					isDisabled: true,
 				});
+			} else {
+				// If the type is no longer a constant, remove the isDisabled flag
+				const existingValue = newValues.get(otherInput.index);
+				if (existingValue?.isDisabled) {
+					newValues.set(otherInput.index, {
+						value: existingValue.value,
+					});
+				}
 			}
 		}
 	});

@@ -4,7 +4,7 @@ import { ParsedView } from "@/components/ParsedView";
 import { useState } from "react";
 
 const SENTENCE =
-	"Transfer {0<amount:[(1.1)===721?1:uint256]>} {1<token:address=0x62180042606624f02d8a130da8a3171e9b33894d:uint256=721>} {2<id:[(1.1)>20?uint256:null]>}";
+	"Transfer {0<amount:[(1.1)==721?1:uint256]>} {1<token:address=0x62180042606624f02d8a130da8a3171e9b33894d:uint256=721>} {2<id:[(1.1)>20?uint256:null]>}";
 
 export const App = () => {
 	const [sentence, setSentence] = useState(SENTENCE);
