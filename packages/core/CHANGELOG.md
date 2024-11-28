@@ -1,5 +1,11 @@
 # @terminallyonline/cord
 
+## 0.0.10
+
+### Patch Changes
+
+- 62e4109: chore: make playground private
+
 ## 0.0.9
 
 ### Patch Changes
