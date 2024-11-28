@@ -1,4 +1,4 @@
-name: Release
+name: "⛅ Release"
 
 on:
     push:
@@ -9,36 +9,34 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
     release:
-        name: Release
+        name: ⛅ Release
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout
+            - name: 🛒 Checkout
               uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
 
-            - name: Setup PNPM
+            - name: ⚙️  Setup Action
               uses: pnpm/action-setup@v4
               with:
                   version: 8
 
-            - name: Setup Node.js
+            - name: 📚 Setup Node
               uses: actions/setup-node@v4
               with:
                   node-version: 18
                   cache: "pnpm"
 
-            - name: Install Dependencies
+            - name: 📦 Install dependencies
               run: pnpm install
 
-            - name: Build Package
+            - name: 🔨 Build Package
               run: pnpm build
 
-            - name: Create Release Pull Request or Publish
+            - name: 🚀 Create Release Pull Request or Publish
               id: changesets
               uses: changesets/action@v1
               with:
-                  publish: pnpm run publish
+                  publish: pnpm changeset publish
                   commit: "chore: version packages"
                   title: "chore: version packages"
               env:
