@@ -9,7 +9,13 @@ const maxIntValue = (bits: number): bigint => 2n ** BigInt(bits - 1) - 1n;
 const minIntValue = (bits: number): bigint => -(2n ** BigInt(bits - 1));
 
 export const validateEvmValue = (value: string, type: InputType): boolean => {
-	if (!value.trim()) { return false }
+	if (!value.trim()) {
+		return false;
+	}
+
+	if (type === "null") {
+		return true;
+	}
 
 	if (typeof type === "object" && "left" in type) {
 		return true;
@@ -89,6 +95,8 @@ export const validateCompoundValue = (
 };
 
 export const isEvmType = (type: string): type is EvmType => {
+	if (type === "null") return true;
+
 	if (type.startsWith("uint")) {
 		const match = type.match(UINT_PATTERN);
 		if (!match) return false;

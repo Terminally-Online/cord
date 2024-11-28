@@ -75,4 +75,5 @@ export type EvmType =
 	| "address"
 	| "bool"
 	| "string"
-	| "bytes";
+	| "bytes"
+	| "null";

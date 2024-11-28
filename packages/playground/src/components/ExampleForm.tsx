@@ -1,5 +1,10 @@
-import { InputState, InputType, ParsedCordSentence } from "@cord/core";
-import { ValidationError } from "@cord/core/react";
+import {
+	compareValues,
+	InputState,
+	InputType,
+	ParsedCordSentence,
+	ValidationError,
+} from "@terminallyonline/cord";
 
 type ExampleFormProps = {
 	parsed: ParsedCordSentence | null;
@@ -9,7 +14,7 @@ type ExampleFormProps = {
 };
 
 const isConstantType = (
-	type: InputType | undefined,
+	type: InputType | undefined
 ): { isConstant: boolean; value?: string } => {
 	if (!type) return { isConstant: false };
 	if (typeof type === "object" && "constant" in type) {
@@ -26,109 +31,140 @@ export const ExampleForm = ({
 }: ExampleFormProps) => {
 	if (!parsed) return null;
 
+	const shouldRenderInput = (
+		index: number,
+		type: InputType | undefined
+	): boolean => {
+		if (!type) return true;
+		if (type === "null") return false;
+		if (typeof type === "object" && "left" in type) {
+			const conditionMet = compareValues(
+				type.left,
+				type.operator,
+				type.right,
+				new Map(
+					parsed.inputs.map((i) => {
+						const value = getInputValue(i.index);
+						return [i.index, { value: value?.value || "" }];
+					})
+				)
+			);
+			const resolvedType = conditionMet ? type.trueType : type.falseType;
+			return resolvedType !== "null";
+		}
+		return true;
+	};
+
 	return (
 		<div className="bg-white rounded-lg shadow-sm my-6">
 			<h2 className="text-lg font-semibold mb-2">Input Values</h2>
 			<div className="space-y-4">
-				{parsed.inputs.map((input) => {
-					const value = getInputValue(input.index);
-					const error = getInputError(input.index);
-					const { isConstant, value: constantValue } = isConstantType(
-						input.type,
-					);
+				{parsed.inputs
+					.filter((input) =>
+						shouldRenderInput(input.index, input.type)
+					)
+					.map((input) => {
+						const value = getInputValue(input.index);
+						const error = getInputError(input.index);
+						const { isConstant, value: constantValue } =
+							isConstantType(input.type);
 
-					// TODO: Should not have to set the value here and it should be handled by core.
-					if (isConstant && constantValue && !value) {
-						setValue(input.index, constantValue);
-					}
+						// TODO: Should not have to set the value here and it should be handled by core.
+						if (isConstant && constantValue && !value) {
+							setValue(input.index, constantValue);
+						}
 
-					const isEmpty = !value?.value.trim();
-					const isValid = !isEmpty && !error;
+						const isEmpty = !value?.value.trim();
+						const isValid = !isEmpty && !error;
 
-					return (
-						<div key={input.index} className="flex flex-col gap-1">
-							<div className="flex items-center gap-4">
-								<label className="w-24 font-mono text-sm">
-									{input.name ?? `Input #${input.index}`}
-									{input.delimiter && (
-										<span className="text-gray-500 ml-1">
-											(:{input.delimiter})
-										</span>
-									)}
-								</label>
-								<div className="flex-1 relative">
-									<input
-										type="text"
-										value={value?.value}
-										onChange={(e) =>
-											setValue(
-												input.index,
-												e.target.value,
-											)
-										}
-										disabled={isConstant}
-										className={`
+						return (
+							<div
+								key={input.index}
+								className="flex flex-col gap-1"
+							>
+								<div className="flex items-center gap-4">
+									<label className="w-24 font-mono text-sm">
+										{input.name ?? `Input #${input.index}`}
+										{input.delimiter && (
+											<span className="text-gray-500 ml-1">
+												(:{input.delimiter})
+											</span>
+										)}
+									</label>
+									<div className="flex-1 relative">
+										<input
+											type="text"
+											value={value?.value}
+											onChange={(e) =>
+												setValue(
+													input.index,
+													e.target.value
+												)
+											}
+											disabled={isConstant}
+											className={`
                                             w-full p-2 border rounded-md
                                             ${
 												value?.isDisabled
 													? "bg-gray-100 cursor-not-allowed border-gray-300"
 													: isEmpty
-														? "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-														: isValid
-															? "border-green-300 focus:ring-green-500 focus:border-green-500"
-															: "border-red-300 focus:ring-red-500 focus:border-red-500"
+													? "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+													: isValid
+													? "border-green-300 focus:ring-green-500 focus:border-green-500"
+													: "border-red-300 focus:ring-red-500 focus:border-red-500"
 											}
                                         `}
-										placeholder={getInputPlaceholder(
-											input.type,
-										)}
-									/>
-									{value && !value?.isDisabled && (
-										<div className="absolute right-2 top-1/2 -translate-y-1/2">
-											{isValid ? (
-												<svg
-													className="w-5 h-5 text-green-500"
-													fill="none"
-													stroke="currentColor"
-													viewBox="0 0 24 24"
-												>
-													<path
-														strokeLinecap="round"
-														strokeLinejoin="round"
-														strokeWidth={2}
-														d="M5 13l4 4L19 7"
-													/>
-												</svg>
-											) : (
-												<svg
-													className="w-5 h-5 text-red-500"
-													fill="none"
-													stroke="currentColor"
-													viewBox="0 0 24 24"
-												>
-													<path
-														strokeLinecap="round"
-														strokeLinejoin="round"
-														strokeWidth={2}
-														d="M6 18L18 6M6 6l12 12"
-													/>
-												</svg>
+											placeholder={getInputPlaceholder(
+												input.type
 											)}
-										</div>
-									)}
+										/>
+										{value && !value?.isDisabled && (
+											<div className="absolute right-2 top-1/2 -translate-y-1/2">
+												{isValid ? (
+													<svg
+														className="w-5 h-5 text-green-500"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															strokeWidth={2}
+															d="M5 13l4 4L19 7"
+														/>
+													</svg>
+												) : (
+													<svg
+														className="w-5 h-5 text-red-500"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															strokeWidth={2}
+															d="M6 18L18 6M6 6l12 12"
+														/>
+													</svg>
+												)}
+											</div>
+										)}
+									</div>
+								</div>
+								{(isEmpty || error) && !isConstant && (
+									<div className="ml-28 text-sm text-red-600">
+										{error?.message ||
+											"This field is required"}
+									</div>
+								)}
+								<div className="ml-28 text-xs text-gray-500">
+									{getTypeDescription(input.type)}
 								</div>
 							</div>
-							{(isEmpty || error) && !isConstant && (
-								<div className="ml-28 text-sm text-red-600">
-									{error?.message || "This field is required"}
-								</div>
-							)}
-							<div className="ml-28 text-xs text-gray-500">
-								{getTypeDescription(input.type)}
-							</div>
-						</div>
-					);
-				})}
+						);
+					})}
 			</div>
 		</div>
 	);
