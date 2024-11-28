@@ -1,8 +1,8 @@
 import {
 	compareValues,
+	getInputPlaceholder,
+	getTypeDescription,
 	InputState,
-	InputType,
-	isConstantType,
 	ParsedCordSentence,
 	shouldRenderInput,
 	ValidationError,
@@ -38,14 +38,6 @@ export const ExampleForm = ({
 					.map((input) => {
 						const value = getInputValue(input.index);
 						const error = getInputError(input.index);
-						const { isConstant, value: constantValue } =
-							isConstantType(input.type);
-
-						// TODO: Should not have to set the value here and it should be handled by core.
-						if (isConstant && constantValue && !value) {
-							setValue(input.index, constantValue);
-						}
-
 						const isEmpty = !value?.value.trim();
 						const isValid = !isEmpty && !error;
 
@@ -73,7 +65,7 @@ export const ExampleForm = ({
 													e.target.value
 												)
 											}
-											disabled={isConstant}
+											disabled={value?.isDisabled}
 											className={`
                                             w-full p-2 border rounded-md
                                             ${
@@ -125,7 +117,7 @@ export const ExampleForm = ({
 										)}
 									</div>
 								</div>
-								{(isEmpty || error) && !isConstant && (
+								{(isEmpty || error) && !value?.isDisabled && (
 									<div className="ml-28 text-sm text-red-600">
 										{error?.message ||
 											"This field is required"}
@@ -140,55 +132,4 @@ export const ExampleForm = ({
 			</div>
 		</div>
 	);
-};
-
-const getTypeDescription = (type: InputType | undefined): string => {
-	if (!type) return "";
-
-	if (typeof type === "string") {
-		return `Type: ${type}`;
-	}
-
-	if ("constant" in type) {
-		return `Must be: "${type.constant}"`;
-	}
-
-	if ("baseType" in type) {
-		return `Type: ${type.baseType} with ${type.metadata.join(", ")}`;
-	}
-
-	if ("left" in type) {
-		return "Conditional type";
-	}
-
-	return "";
-};
-
-const getInputPlaceholder = (type: InputType | undefined): string => {
-	if (!type) return "";
-
-	if (typeof type === "string") {
-		switch (type) {
-			case "uint256":
-				return "Enter a positive number";
-			case "address":
-				return "0x...";
-			case "bool":
-				return "true or false";
-			case "string":
-				return "Enter text";
-			default:
-				return `Enter ${type}`;
-		}
-	}
-
-	if ("constant" in type) {
-		return `Must be: ${type.constant}`;
-	}
-
-	if ("baseType" in type) {
-		return `Enter ${type.baseType} value`;
-	}
-
-	return "Enter value";
 };
