@@ -1,4 +1,4 @@
-name: "📝 PR Changeset"
+name: "📝 PR on Changeset"
 
 on:
     pull_request:
