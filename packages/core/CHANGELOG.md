@@ -1,5 +1,11 @@
 # @terminallyonline/cord
 
+## 0.0.3
+
+### Patch Changes
+
+- de2651d: feat: confirm functional release
+
 ## 0.0.2
 
 ### Patch Changes
