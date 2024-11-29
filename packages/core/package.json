@@ -14,9 +14,9 @@
 	"type": "module",
 	"scripts": {
 		"build": "rm -rf dist && pnpm build:esm && pnpm build:cjs && pnpm build:types",
-		"build:esm": "tsc --project tsconfig.json",
-		"build:cjs": "esbuild 'src/**/*.ts' 'src/**/*.tsx' --outdir=dist/cjs --format=cjs --platform=node --target=node18",
-		"build:types": "tsc --project tsconfig.json --emitDeclarationOnly --declarationDir dist/types",
+		"build:esm": "tsc --project tsconfig.build.json",
+		"build:cjs": "esbuild 'src/**/*.ts' 'src/**/*.tsx' --outdir=dist/cjs --format=cjs --platform=node --target=node18 --outbase=src --bundle --external:react --external:react-dom --jsx=automatic",
+		"build:types": "tsc --project tsconfig.build.json --emitDeclarationOnly --declarationDir dist/types",
 		"dev": "tsc --watch",
 		"test": "vitest run",
 		"test:watch": "vitest",
@@ -42,15 +42,7 @@
 			"types": "./dist/types/index.d.ts",
 			"import": "./dist/esm/index.js",
 			"require": "./dist/cjs/index.js",
-			"default": "./dist/cjs/index.js",
-			"node": "./dist/cjs/index.js"
-		},
-		"./react": {
-			"types": "./dist/types/react/index.d.ts",
-			"import": "./dist/esm/react/index.js",
-			"require": "./dist/cjs/react/index.js",
-			"default": "./dist/cjs/react/index.js",
-			"node": "./dist/cjs/react/index.js"
+			"default": "./dist/cjs/index.js"
 		}
 	},
 	"typesVersions": {

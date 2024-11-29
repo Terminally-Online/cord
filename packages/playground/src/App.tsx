@@ -1,4 +1,4 @@
-import { useCord } from "@terminallyonline/cord/react";
+import { createInitialState, useCord } from "@terminallyonline/cord";
 import { ExampleForm } from "@/components/ExampleForm";
 import { ParsedView } from "@/components/ParsedView";
 import { useState } from "react";
@@ -12,7 +12,7 @@ export const App = () => {
 		state: { parsed, resolvedSentence, error, values },
 		actions: { setValue },
 		helpers: { getInputValue, getInputError, isComplete, isValid },
-	} = useCord(sentence);
+	} = useCord(sentence, {});
 
 	return (
 		<div className="min-h-screen p-8">
