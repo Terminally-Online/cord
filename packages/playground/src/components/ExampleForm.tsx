@@ -69,6 +69,7 @@ export const ExampleForm = ({
 											input.type
 										)}
 									/>
+
 									{value && !value?.isDisabled && (
 										<div className="absolute right-2 top-1/2 -translate-y-1/2">
 											{isValid ? (

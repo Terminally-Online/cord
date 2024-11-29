@@ -1,21 +1,36 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { parseCordSentence } from "../parse";
 import { setValue, resolveSentence } from "../values";
 import { createInitialState } from "../state";
-import { CordState, UseCordReturn } from "../lib";
+import { CordState, InputState, UseCordReturn } from "../lib";
 import { shouldRenderInput } from "../input";
+
+const createStateFromValues = (values: Record<string, string | undefined>) => {
+	const state = new Map<number, InputState>();
+	Object.entries(values).forEach(([key, value]) => {
+		if (value !== undefined) {
+			state.set(Number(key), { value });
+		}
+	});
+	return state;
+};
 
 const initialState: CordState = {
 	values: createInitialState(),
 	parsed: null,
 	resolvedSentence: null,
 	error: null,
-	isDirty: false,
 	validationErrors: new Map(),
 };
 
-export const useCord = (sentence: string): UseCordReturn => {
-	const [state, setState] = useState<CordState>(initialState);
+export const useCord = (
+	sentence: string,
+	values: Record<string, string | undefined>
+): UseCordReturn => {
+	const [state, setState] = useState<CordState>(() => ({
+		...initialState,
+		values: createStateFromValues(values),
+	}));
 
 	const parsed = useMemo(() => {
 		const result = parseCordSentence(sentence);
@@ -97,11 +112,9 @@ export const useCord = (sentence: string): UseCordReturn => {
 			},
 			[parsed, state.values]
 		),
-
 		reset: useCallback(() => {
 			setState(initialState);
 		}, []),
-
 		clear: useCallback((index: number) => {
 			setState((prev) => {
 				const newValues = new Map(prev.values);
@@ -117,7 +130,6 @@ export const useCord = (sentence: string): UseCordReturn => {
 				};
 			});
 		}, []),
-
 		clearAll: useCallback(() => {
 			setState((prev) => ({
 				...prev,
@@ -133,12 +145,10 @@ export const useCord = (sentence: string): UseCordReturn => {
 			(index: number) => state.values.get(index),
 			[state.values]
 		),
-
 		getInputError: useCallback(
 			(index: number) => state.validationErrors.get(index),
 			[state.validationErrors]
 		),
-
 		getDependentInputs: useCallback(
 			(index: number) => {
 				if (!parsed) return [];
@@ -148,7 +158,6 @@ export const useCord = (sentence: string): UseCordReturn => {
 			},
 			[parsed]
 		),
-
 		hasDependency: useCallback(
 			(index: number) => {
 				if (!parsed) return false;
@@ -158,7 +167,6 @@ export const useCord = (sentence: string): UseCordReturn => {
 			},
 			[parsed]
 		),
-
 		isComplete: useMemo(
 			() =>
 				parsed?.inputs.every((input) =>
@@ -166,12 +174,19 @@ export const useCord = (sentence: string): UseCordReturn => {
 				) ?? false,
 			[parsed, state.values]
 		),
-
 		isValid: useMemo(
 			() => state.validationErrors.size === 0,
 			[state.validationErrors]
 		),
 	};
+
+	useEffect(() => {
+		setState((prev) => ({
+			...prev,
+			values: createStateFromValues(values),
+			isDirty: false,
+		}));
+	}, [values]);
 
 	return {
 		state: {
