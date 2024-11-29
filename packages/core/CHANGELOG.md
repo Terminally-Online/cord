@@ -1,5 +1,61 @@
 # @terminallyonline/cord
 
+## 0.1.1
+
+### Patch Changes
+
+- 2eb9283: ## 🔄 PR Details
+  fix: package export
+
+  > No description provided.
+
+  ## 📝 Changes
+
+  - fix: package export ([27b6c72](https://github.com/Terminally-Online/cord/commit/27b6c72daef48c9165d5453b1ea01343d67125be))
+
+  ## 🔍 Additional Context
+
+  - PR: [#34](https://github.com/Terminally-Online/cord/pull/34)
+  - Branch: `fix-package`
+  - Author: @nftchance
+  - Files Changed: 5
+
+  ## 📊 Stats
+
+  ```diff
+   5 files changed, 55 insertions(+), 8 deletions(-)
+  ```
+
+- 2eb9283: ## 🔄 PR Details
+
+  fix: package import
+
+  > No description provided.
+
+  ## 📝 Changes
+
+  - Merge branch 'main' of https://github.com/Terminally-Online/cord into fix-package-import ([a6404d3](https://github.com/Terminally-Online/cord/commit/a6404d3ffdf6544a307bd7b21e40eb68336e58bf))
+  - fix: package version ([f8715e6](https://github.com/Terminally-Online/cord/commit/f8715e6fd49de8fb725e886671477774c6446297))
+  - fix: update lockfile ([72360ee](https://github.com/Terminally-Online/cord/commit/72360ee47d4d1968d207376069f845cf6740f9af))
+  - fix: package build and exports ([1915ffe](https://github.com/Terminally-Online/cord/commit/1915ffe801eed5cb635ff9bd926d5a068ebdbb97))
+  - Merge branch 'fix-package' of https://github.com/Terminally-Online/cord into fix-package ([9eecd2d](https://github.com/Terminally-Online/cord/commit/9eecd2de8de57f95b69aea450da27abe4b18feb5))
+  - feat: ems and cjs exports ([efd93d4](https://github.com/Terminally-Online/cord/commit/efd93d4feb9053bef8593ccd9d0da48ca00e84ba))
+  - chore: update changeset for PR #34 ([5738942](https://github.com/Terminally-Online/cord/commit/5738942588fedcad85a5b77e0979e4ec975e763e))
+  - fix: package export ([27b6c72](https://github.com/Terminally-Online/cord/commit/27b6c72daef48c9165d5453b1ea01343d67125be))
+
+  ## 🔍 Additional Context
+
+  - PR: [#36](https://github.com/Terminally-Online/cord/pull/36)
+  - Branch: `fix-package-import`
+  - Author: @nftchance
+  - Files Changed: 4
+
+  ## 📊 Stats
+
+  ```diff
+   4 files changed, 292 insertions(+), 11 deletions(-)
+  ```
+
 ## 0.1.0
 
 ### Minor Changes
