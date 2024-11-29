@@ -12,24 +12,26 @@
 		"url": "https://github.com/Terminally-Online/cord/issues"
 	},
 	"type": "module",
-	"engines": {
-		"node": ">=18"
-	},
 	"scripts": {
-		"build": "rm -rf dist && tsc && tsc --project tsconfig.esm.json",
+		"build": "rm -rf dist && pnpm build:esm && pnpm build:cjs && pnpm build:types",
+		"build:esm": "tsc --project tsconfig.json",
+		"build:cjs": "esbuild 'src/**/*.ts' 'src/**/*.tsx' --outdir=dist/cjs --format=cjs --platform=node --target=node18",
+		"build:types": "tsc --project tsconfig.json --emitDeclarationOnly --declarationDir dist/types",
 		"dev": "tsc --watch",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage"
 	},
 	"peerDependencies": {
-		"react": "^18.0.0"
+		"react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+		"react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
 	},
 	"devDependencies": {
 		"@types/react": "^18.2.45",
 		"react": "^18.2.0",
 		"typescript": "^5.3.3",
-		"vitest": "^2.1.5"
+		"vitest": "^2.1.5",
+		"esbuild": "^0.20.0"
 	},
 	"files": [
 		"dist",
@@ -40,13 +42,25 @@
 			"types": "./dist/types/index.d.ts",
 			"import": "./dist/esm/index.js",
 			"require": "./dist/cjs/index.js",
-			"default": "./dist/cjs/index.js"
+			"default": "./dist/cjs/index.js",
+			"node": "./dist/cjs/index.js"
 		},
 		"./react": {
 			"types": "./dist/types/react/index.d.ts",
 			"import": "./dist/esm/react/index.js",
 			"require": "./dist/cjs/react/index.js",
-			"default": "./dist/cjs/react/index.js"
+			"default": "./dist/cjs/react/index.js",
+			"node": "./dist/cjs/react/index.js"
+		}
+	},
+	"typesVersions": {
+		"*": {
+			"*": [
+				"./dist/types/*"
+			],
+			"react": [
+				"./dist/types/react/index.d.ts"
+			]
 		}
 	},
 	"main": "./dist/cjs/index.js",
