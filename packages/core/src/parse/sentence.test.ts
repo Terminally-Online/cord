@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseCordSentence } from "./sentence";
+import { setValue } from "../values";
+import { ParsedCordSentence } from "../lib";
 
 describe("parseCordSentence", () => {
 	it("should parse basic placeholders", () => {
@@ -13,7 +15,7 @@ describe("parseCordSentence", () => {
 
 	it("should parse placeholders with name", () => {
 		const result = parseCordSentence(
-			"Transfer {0<amount>} {1<token>} to {2<recipient>}",
+			"Transfer {0<amount>} {1<token>} to {2<recipient>}"
 		);
 		expect(result.success).toBe(true);
 		if (!result.success) return;
@@ -24,7 +26,7 @@ describe("parseCordSentence", () => {
 
 	it("should parse named inputs", () => {
 		const result = parseCordSentence(
-			"Transfer {0<amount>} {1<token>} to {2}",
+			"Transfer {0<amount>} {1<token>} to {2}"
 		);
 		expect(result.success).toBe(true);
 		if (!result.success) return;
@@ -47,7 +49,7 @@ describe("parseCordSentence", () => {
 
 	it("should correctly parse dependencies", () => {
 		const result = parseCordSentence(
-			"Deposit {0<amount:uint256>} {1<token:address>} into {1=>2<vault:address>}",
+			"Deposit {0<amount:uint256>} {1<token:address>} into {1=>2<vault:address>}"
 		);
 
 		expect(result.success).toBe(true);
@@ -61,7 +63,7 @@ describe("parseCordSentence", () => {
 
 	it("should parse multiple dependencies", () => {
 		const result = parseCordSentence(
-			"Transfer {0} {1} to {1=>2} and {1=>3}",
+			"Transfer {0} {1} to {1=>2} and {1=>3}"
 		);
 
 		expect(result.success).toBe(true);
@@ -69,6 +71,70 @@ describe("parseCordSentence", () => {
 
 		expect(result.value.inputs[2].dependentOn).toBe(1);
 		expect(result.value.inputs[3].dependentOn).toBe(1);
+	});
+
+	it("should clear dependent values when parent value changes", () => {
+		const mockParsedSentence: ParsedCordSentence = {
+			raw: "Deposit {0<amount:uint256>} {1<token:address>} into {1=>2<vault:address>}",
+			template: "Deposit {0} {1} into {2}",
+			inputs: [
+				{ index: 0, type: "uint256" },
+				{ index: 1, type: "address" },
+				{ index: 2, type: "address", dependentOn: 1 },
+			],
+			values: new Map(),
+		};
+
+		const currentValues = new Map([
+			[1, { value: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e" }],
+			[2, { value: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" }],
+		]);
+
+		const result = setValue({
+			parsedSentence: mockParsedSentence,
+			currentValues,
+			index: 1,
+			value: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+		});
+
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.value.get(1)?.value).toBe(
+				"0x6B175474E89094C44Da98b954EedeAC495271d0F"
+			);
+			expect(result.value.has(2)).toBe(false);
+		}
+	});
+
+	it("should clear dependent values when parent value is cleared", () => {
+		const mockParsedSentence: ParsedCordSentence = {
+			raw: "Deposit {0<amount:uint256>} {1<token:address>} into {1=>2<vault:address>}",
+			template: "Deposit {0} {1} into {2}",
+			inputs: [
+				{ index: 0, type: "uint256" },
+				{ index: 1, type: "address" },
+				{ index: 2, type: "address", dependentOn: 1 },
+			],
+			values: new Map(),
+		};
+
+		const currentValues = new Map([
+			[1, { value: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e" }],
+			[2, { value: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" }],
+		]);
+
+		const result = setValue({
+			parsedSentence: mockParsedSentence,
+			currentValues,
+			index: 1,
+			value: "",
+		});
+
+		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.value.has(1)).toBe(false);
+			expect(result.value.has(2)).toBe(false);
+		}
 	});
 });
 
@@ -88,14 +154,14 @@ describe("parseCordSentence with default values", () => {
 
 	it("should validate default values match their types", () => {
 		const result = parseCordSentence(
-			"Deposit {0<amount:uint256=invalid>} {1<token:address>}",
+			"Deposit {0<amount:uint256=invalid>} {1<token:address>}"
 		);
 		expect(result.success).toBe(false);
 	});
 
 	it("should handle multiple inputs with default values", () => {
 		const result = parseCordSentence(
-			"Transfer {0<amount:uint256=100>} {1<token:address=0x742d35Cc6634C0532925a3b844Bc454e4438f44e>}",
+			"Transfer {0<amount:uint256=100>} {1<token:address=0x742d35Cc6634C0532925a3b844Bc454e4438f44e>}"
 		);
 
 		expect(result.success).toBe(true);
@@ -103,7 +169,7 @@ describe("parseCordSentence with default values", () => {
 
 		expect(result.value.inputs[0].defaultValue).toBe("100");
 		expect(result.value.inputs[1].defaultValue).toBe(
-			"0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+			"0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
 		);
 	});
 });
