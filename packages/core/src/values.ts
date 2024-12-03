@@ -25,7 +25,6 @@ export const setValue = ({
 	let validationError: string | undefined;
 	const newValues = new Map(currentValues);
 
-	// Handle direct null type
 	if (input.type === "null") {
 		newValues.delete(index);
 		return {
@@ -74,9 +73,12 @@ export const setValue = ({
 		};
 	}
 
-	newValues.set(index, { value: value });
+	if (value) {
+		newValues.set(index, { value: value });
+	} else {
+		newValues.delete(index);
+	}
 
-	// Process other inputs for conditional types and null types
 	parsedSentence.inputs.forEach((otherInput) => {
 		if (otherInput.index === index) return;
 
@@ -122,11 +124,13 @@ export const setValue = ({
 		(input) => input.dependentOn === index
 	);
 	if (hasDependents) {
-		parsedSentence.inputs.forEach((input) => {
-			if (input.dependentOn === index) {
-				newValues.delete(input.index);
-			}
-		});
+		if (!value || currentValues.get(index)?.value !== value) {
+			parsedSentence.inputs.forEach((input) => {
+				if (input.dependentOn === index) {
+					newValues.delete(input.index);
+				}
+			});
+		}
 	}
 
 	return {
