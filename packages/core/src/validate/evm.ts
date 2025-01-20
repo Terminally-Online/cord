@@ -17,6 +17,15 @@ export const validateEvmValue = (value: string, type: InputType): boolean => {
 		return true;
 	}
 
+	if (type === "float") {
+		try {
+			const floatValue = parseFloat(value);
+			return !isNaN(floatValue);
+		} catch {
+			return false;
+		}
+	}
+
 	if (typeof type === "object" && "left" in type) {
 		return true;
 	}
@@ -35,25 +44,21 @@ export const validateEvmValue = (value: string, type: InputType): boolean => {
 		);
 	}
 
-	const uintMatch = type.match(UINT_PATTERN);
-	if (uintMatch) {
-		const bits = parseInt(uintMatch[1]);
+	if (type.startsWith("uint") || type.startsWith("int")) {
 		if (value.startsWith("0x")) return false;
-		try {
-			const num = BigInt(value);
-			return num >= 0n && num <= maxUintValue(bits);
-		} catch {
-			return false;
-		}
-	}
 
-	const intMatch = type.match(INT_PATTERN);
-	if (intMatch) {
-		const bits = parseInt(intMatch[1]);
-		if (value.startsWith("0x")) return false;
 		try {
-			const num = BigInt(value);
-			return num >= minIntValue(bits) && num <= maxIntValue(bits);
+			const numValue = BigInt(value);
+			const bitSize =
+				parseInt(type.slice(type.startsWith("uint") ? 4 : 3)) || 256;
+			const maxValue = type.startsWith("uint")
+				? 2n ** BigInt(bitSize) - 1n
+				: 2n ** BigInt(bitSize - 1) - 1n;
+			const minValue = type.startsWith("uint")
+				? 0n
+				: -(2n ** BigInt(bitSize - 1));
+
+			return numValue >= minValue && numValue <= maxValue;
 		} catch {
 			return false;
 		}

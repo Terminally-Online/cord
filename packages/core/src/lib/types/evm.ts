@@ -76,4 +76,5 @@ export type EvmType =
 	| "bool"
 	| "string"
 	| "bytes"
-	| "null";
+	| "null"
+	| "float";

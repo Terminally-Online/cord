@@ -130,6 +130,12 @@ describe("validateEvmValue", () => {
 		});
 	});
 
+	describe("float", () => {
+		it("should validate floats", () => {
+			expect(validateEvmValue("1.1234", "float")).toBe(true);
+		});
+	});
+
 	describe("bool", () => {
 		it("should validate booleans", () => {
 			expect(validateEvmValue("true", "bool")).toBe(true);
