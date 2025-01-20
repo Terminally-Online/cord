@@ -123,5 +123,5 @@ export const isEvmType = (type: string): type is EvmType => {
 		return size >= 1 && size <= 32;
 	}
 
-	return ["address", "bool", "string", "bytes"].includes(type);
+	return ["address", "bool", "string", "bytes", "float"].includes(type);
 };
