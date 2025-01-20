@@ -1,5 +1,11 @@
 # @terminallyonline/cord
 
+## 0.3.2
+
+### Patch Changes
+
+- 7e01896: fix: add float to isEvmType
+
 ## 0.3.1
 
 ### Patch Changes
