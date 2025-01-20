@@ -87,6 +87,7 @@ Valid types include:
 -   `bool`
 -   `string`
 -   `null`
+-   `float`
 
 ### Compound Types
 
