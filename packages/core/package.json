@@ -23,9 +23,9 @@
 		"test:coverage": "vitest run --coverage"
 	},
 	"devDependencies": {
-		"typescript": "^5.3.3",
-		"vitest": "^2.1.9",
-		"esbuild": "^0.25.0"
+		"esbuild": "^0.25.0",
+		"typescript": "^5.8.2",
+		"vitest": "^3.0.8"
 	},
 	"files": [
 		"dist",
