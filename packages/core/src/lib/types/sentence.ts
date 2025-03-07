@@ -2,9 +2,14 @@ import { EvmType } from "./evm";
 
 export type ConstantType = { constant: string };
 
+// A simpler version of UnionType for use in CompoundType to avoid circular references
+export type SimpleUnionType = {
+	types: (EvmType | ConstantType)[];
+};
+
 export type CompoundType = {
-	baseType: EvmType | ConstantType;
-	metadata: (EvmType | ConstantType)[];
+	baseType: EvmType | ConstantType | SimpleUnionType;
+	metadata: (EvmType | ConstantType | SimpleUnionType)[];
 };
 
 export type ComparisonOperator = "==" | ">" | "<" | ">=" | "<=" | "!=";

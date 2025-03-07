@@ -1,4 +1,4 @@
-import { EvmType, ConstantType, InputType, ComparisonOperator, UnionType } from "../lib";
+import { EvmType, ConstantType, InputType, ComparisonOperator, UnionType, SimpleUnionType } from "../lib";
 import { isEvmType, validateEvmValue } from "../validate";
 import { parseTypeValue, parseValue } from "./values";
 
@@ -45,7 +45,7 @@ export const parseConditionalType = (inner: string): { type: InputType } => {
 
 export const parseRegularType = (typeString: string, defaultValue?: string) => {
 	const parts = typeString.split(":");
-	const typesAndDefaults: { types: (EvmType | ConstantType | UnionType)[]; defaults: (string | undefined)[] }[] = [];
+	const typesAndDefaults: { types: (EvmType | ConstantType | SimpleUnionType)[]; defaults: (string | undefined)[] }[] = [];
 
 	parts.forEach((part) => {
 		const [partTypeStr, partDefaultValue] = part.split("=");
@@ -62,8 +62,8 @@ export const parseRegularType = (typeString: string, defaultValue?: string) => {
 				unionTypes.push(unionType);
 			});
 			
-			// Create a union type
-			const unionType: UnionType = { types: unionTypes };
+			// Create a simple union type for compound type compatibility
+			const simpleUnionType: SimpleUnionType = { types: unionTypes };
 			
 			// Validate default value against any of the union types
 			if (partDefaultValue !== undefined) {
@@ -83,7 +83,7 @@ export const parseRegularType = (typeString: string, defaultValue?: string) => {
 			}
 			
 			typesAndDefaults.push({
-				types: [unionType],
+				types: [simpleUnionType],
 				defaults: [partDefaultValue]
 			});
 		} else {

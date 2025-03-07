@@ -1,4 +1,4 @@
-import { CompoundType, EvmType, InputType } from "@/lib";
+import { CompoundType, EvmType, InputType, SimpleUnionType } from "@/lib";
 
 const UINT_PATTERN = /^uint(\d+)$/;
 const INT_PATTERN = /^int(\d+)$/;
@@ -8,7 +8,7 @@ const maxUintValue = (bits: number): bigint => 2n ** BigInt(bits) - 1n;
 const maxIntValue = (bits: number): bigint => 2n ** BigInt(bits - 1) - 1n;
 const minIntValue = (bits: number): bigint => -(2n ** BigInt(bits - 1));
 
-export const validateEvmValue = (value: string, type: InputType): boolean => {
+export const validateEvmValue = (value: string, type: InputType | SimpleUnionType): boolean => {
 	if (!value.trim()) {
 		return false;
 	}
@@ -35,7 +35,7 @@ export const validateEvmValue = (value: string, type: InputType): boolean => {
 	}
 	
 	if (typeof type === "object" && "types" in type) {
-		// This is a union type, check if value is valid for any of the types
+		// This is a union type or simple union type, check if value is valid for any of the types
 		return type.types.some(unionType => validateEvmValue(value, unionType));
 	}
 
