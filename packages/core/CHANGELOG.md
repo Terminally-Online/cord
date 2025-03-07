@@ -1,5 +1,11 @@
 # @terminallyonline/cord
 
+## 0.3.3
+
+### Patch Changes
+
+- f6105b0: feat: type unions
+
 ## 0.3.2
 
 ### Patch Changes
