@@ -134,7 +134,7 @@ Supported comparison operators:
 -   `<` Less than
 -   `<=` Less than or equal
 
-### Dependencies
+### Dependent Types
 
 Define dependencies between inputs using the `=>` operator:
 
@@ -143,6 +143,16 @@ Deposit {0<amount:uint256>} {1<token:address>} into {1=>2<vault:address>}.
 ```
 
 When the value of the parent input `(1)` changes, the dependent input `(2)` will be cleared.
+
+### Type Unions
+
+In specific cases you have the requirement of specifying multiple accepted types as your input. As simple example here is to imagine the need of transferring like:
+
+```typescript
+Transfer {0<amount:float|uint256>} {1<token:address:uint256:uint256>} to {2<recipient:address>}
+```
+
+Now, with this sentence you have the framework to handle amount when it is passed as a full integer value as well as a float value that has already been decimal-adjusted.
 
 ## Validation Rules
 

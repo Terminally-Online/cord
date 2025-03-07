@@ -1,4 +1,4 @@
-import { EvmType, ConstantType, InputType, ComparisonOperator } from "../lib";
+import { EvmType, ConstantType, InputType, ComparisonOperator, UnionType } from "../lib";
 import { isEvmType, validateEvmValue } from "../validate";
 import { parseTypeValue, parseValue } from "./values";
 
@@ -45,28 +45,72 @@ export const parseConditionalType = (inner: string): { type: InputType } => {
 
 export const parseRegularType = (typeString: string, defaultValue?: string) => {
 	const parts = typeString.split(":");
-	const types: (EvmType | ConstantType)[] = [];
-	const defaults: (string | undefined)[] = [];
+	const typesAndDefaults: { types: (EvmType | ConstantType | UnionType)[]; defaults: (string | undefined)[] }[] = [];
 
 	parts.forEach((part) => {
 		const [partTypeStr, partDefaultValue] = part.split("=");
-		const type: EvmType | ConstantType = isEvmType(partTypeStr)
-			? (partTypeStr as EvmType)
-			: { constant: partTypeStr };
-
-		if (partDefaultValue !== undefined) {
-			if (!validateEvmValue(partDefaultValue, type)) {
-				throw new Error(
-					typeof type === "object"
-						? `Invalid default value "${partDefaultValue}" for constant(${type.constant})`
-						: `Invalid default value "${partDefaultValue}" for type ${type}`,
-				);
+		
+		// Check if this is a union type (contains |)
+		if (partTypeStr.includes("|")) {
+			const unionParts = partTypeStr.split("|");
+			const unionTypes: (EvmType | ConstantType)[] = [];
+			
+			unionParts.forEach(unionPart => {
+				const unionType: EvmType | ConstantType = isEvmType(unionPart)
+					? (unionPart as EvmType)
+					: { constant: unionPart };
+				unionTypes.push(unionType);
+			});
+			
+			// Create a union type
+			const unionType: UnionType = { types: unionTypes };
+			
+			// Validate default value against any of the union types
+			if (partDefaultValue !== undefined) {
+				let isValid = false;
+				for (const type of unionTypes) {
+					if (validateEvmValue(partDefaultValue, type)) {
+						isValid = true;
+						break;
+					}
+				}
+				
+				if (!isValid) {
+					throw new Error(
+						`Invalid default value "${partDefaultValue}" for union type ${partTypeStr}`
+					);
+				}
 			}
-		}
+			
+			typesAndDefaults.push({
+				types: [unionType],
+				defaults: [partDefaultValue]
+			});
+		} else {
+			const type: EvmType | ConstantType = isEvmType(partTypeStr)
+				? (partTypeStr as EvmType)
+				: { constant: partTypeStr };
 
-		types.push(type);
-		defaults.push(partDefaultValue);
+			if (partDefaultValue !== undefined) {
+				if (!validateEvmValue(partDefaultValue, type)) {
+					throw new Error(
+						typeof type === "object"
+							? `Invalid default value "${partDefaultValue}" for constant(${type.constant})`
+							: `Invalid default value "${partDefaultValue}" for type ${type}`,
+					);
+				}
+			}
+
+			typesAndDefaults.push({
+				types: [type],
+				defaults: [partDefaultValue]
+			});
+		}
 	});
+
+	// Flatten the types and defaults
+	const types = typesAndDefaults.flatMap(td => td.types);
+	const defaults = typesAndDefaults.flatMap(td => td.defaults);
 
 	const type: InputType =
 		types.length > 1

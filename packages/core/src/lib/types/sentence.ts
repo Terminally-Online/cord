@@ -17,7 +17,11 @@ export type ComparisonType = {
 	falseType: InputType;
 };
 
-export type InputType = EvmType | ConstantType | CompoundType | ComparisonType;
+export type UnionType = {
+	types: InputType[];
+};
+
+export type InputType = EvmType | ConstantType | CompoundType | ComparisonType | UnionType;
 export type InputReference = {
 	index: number;
 	name?: string;

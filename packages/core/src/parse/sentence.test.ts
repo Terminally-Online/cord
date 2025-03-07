@@ -173,3 +173,66 @@ describe("parseCordSentence with default values", () => {
 		);
 	});
 });
+
+describe("parseCordSentence with type unions", () => {
+	it("should parse type unions correctly", () => {
+		const sentence = "Transfer {0<amount:float|uint256>} {1<token:address>} to {2<recipient:address>}";
+
+		const result = parseCordSentence(sentence);
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		const input = result.value.inputs[0];
+		expect(input.name).toBe("amount");
+		expect(input.type).toHaveProperty("types");
+		if (typeof input.type === "object" && "types" in input.type) {
+			expect(input.type.types).toHaveLength(2);
+			expect(input.type.types).toContain("float");
+			expect(input.type.types).toContain("uint256");
+		}
+	});
+
+	it("should parse type unions with default values", () => {
+		const sentence = "Transfer {0<amount:float|uint256=1.5>} {1<token:address>} to {2<recipient:address>}";
+
+		const result = parseCordSentence(sentence);
+
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+
+		const input = result.value.inputs[0];
+		expect(input.defaultValue).toBe("1.5");
+		expect(input.type).toHaveProperty("types");
+	});
+
+	it("should validate default values for type unions", () => {
+		const result = parseCordSentence(
+			"Transfer {0<amount:float|uint256=abc>} {1<token:address>} to {2<recipient:address>}"
+		);
+		expect(result.success).toBe(false);
+		if (result.success) return;
+		
+		expect(result.error).toContain("Invalid default value");
+	});
+
+	it("should validate default values work with any type in the union", () => {
+		// Float value (valid for float but not for uint256)
+		const floatResult = parseCordSentence(
+			"Transfer {0<amount:float|uint256=1.5>} {1<token:address>} to {2<recipient:address>}"
+		);
+		expect(floatResult.success).toBe(true);
+
+		// Integer value (valid for both float and uint256)
+		const intResult = parseCordSentence(
+			"Transfer {0<amount:float|uint256=100>} {1<token:address>} to {2<recipient:address>}"
+		);
+		expect(intResult.success).toBe(true);
+		
+		// Negative number (valid for float but not for uint256)
+		const negativeResult = parseCordSentence(
+			"Transfer {0<amount:float|uint256=-10.5>} {1<token:address>} to {2<recipient:address>}"
+		);
+		expect(negativeResult.success).toBe(true);
+	});
+});

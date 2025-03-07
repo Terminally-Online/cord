@@ -33,6 +33,11 @@ export const validateEvmValue = (value: string, type: InputType): boolean => {
 	if (typeof type === "object" && "constant" in type) {
 		return value === type.constant;
 	}
+	
+	if (typeof type === "object" && "types" in type) {
+		// This is a union type, check if value is valid for any of the types
+		return type.types.some(unionType => validateEvmValue(value, unionType));
+	}
 
 	if (typeof type === "object" && "baseType" in type) {
 		const parts = value.split(":");
